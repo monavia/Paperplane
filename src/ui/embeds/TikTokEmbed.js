@@ -11,13 +11,13 @@ function liveNotification(username) {
     .setTimestamp();
 }
 
-function trackedList(entries) {
+function trackedList(entries, prefix = "!") {
   const desc = entries.length
     ? entries.map((e, i) => `${i + 1}. @${e.username} ${e.isLive ? "🔴 LIVE" : "⚫ Offline"}`).join("\n")
-    : "No tracked TikTok users.";
+    : `Used command \`${prefix}tiktok add\`, \`${prefix}tiktok list\`, \`${prefix}tiktok remove\``;
 
   return new EmbedBuilder()
-    .setTitle("📋 Tracked TikTok Users")
+    .setTitle("Tracked TikTok Users")
     .setDescription(desc)
     .setColor(Colors.PRIMARY);
 }

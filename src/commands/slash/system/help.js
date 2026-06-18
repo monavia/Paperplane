@@ -9,19 +9,43 @@ module.exports = {
   async execute(interaction) {
     const embed = new EmbedBuilder()
       .setTitle("Help")
-      .setDescription("Here are my available commands:")
+      .setDescription("Daftar perintah yang tersedia:")
       .addFields(
         {
           name: "🎵 Music",
-          value: "`/play`, `/skip`, `/stop`, `/pause`, `/resume`, `/queue`, `/nowplaying`, `/volume`, `/shuffle`, `/loop`, `/seek`, `/autoplay`",
+          value:
+            "`/play <judul/url>` — Memutar lagu\n" +
+            "`/skip` — Melewati lagu\n" +
+            "`/stop` — Berhenti & disconnect\n" +
+            "`/pause` — Jeda lagu\n" +
+            "`/resume` — Lanjutkan lagu\n" +
+            "`/queue` — Lihat antrian\n" +
+            "`/nowplaying` — Lagu sedang diputar\n" +
+            "`/volume <1-100>` — Atur volume\n" +
+            "`/shuffle` — Acak antrian\n" +
+            "`/loop` — Ulang lagu/antrian\n" +
+            "`/seek <detik>` — Loncat ke posisi\n" +
+            "`/autoplay` — Putar lagu serupa",
         },
         {
           name: "🤖 AI",
-          value: "`/ask`, `/summarize`, `/imagine`, `/recommend`",
+          value:
+            "`/ask <pertanyaan>` — Tanya AI\n" +
+            "`/summarize <teks>` — Ringkas teks\n" +
+            "`/imagine <deskripsi>` — Buat gambar\n" +
+            "`/recommend` — Rekomendasi lagu",
         },
         {
           name: "⚙️ System",
-          value: "`/ping`, `/help`, `/info`, `/stats`, `/prefix`",
+          value:
+            "`/ping` — Cek respon bot\n" +
+            "`/help` — Bantuan ini\n" +
+            "`/info` — Info bot\n" +
+            "`/stats` — Statistik bot\n" +
+            "`/tiktok add <user> #channel` — Pantau TikTok\n" +
+            "`/tiktok remove <user>` — Hentikan pantauan\n" +
+            "`/tiktok list` — Lihat daftar pantauan\n" +
+            "`/prefix` — Ganti prefix",
         },
       )
       .setColor(Colors.PRIMARY);

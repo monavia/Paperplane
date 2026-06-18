@@ -98,7 +98,7 @@ async function isLive(username) {
     if (!match) return false;
 
     const data = JSON.parse(match[1]);
-    const userData = data?.__DEFAULT_SCOPE__?.webapp?.userDetail;
+    const userData = data?.__DEFAULT_SCOPE__?.["webapp.user-detail"];
     if (!userData) return false;
 
     return !!userData.user?.isLive;

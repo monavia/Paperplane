@@ -2,6 +2,7 @@ const TikTokService = require("../../../services/TikTokService");
 const TikTokEmbed = require("../../../ui/embeds/TikTokEmbed");
 const SuccessEmbed = require("../../../ui/embeds/SuccessEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const botConfig = require("../../../config/bot");
 
 module.exports = {
   name: "tiktok",
@@ -10,15 +11,18 @@ module.exports = {
 
     if (!sub || sub === "list") {
       const entries = await TikTokService.getTracks(message.guildId);
-      return message.channel.send({ embeds: [TikTokEmbed.trackedList(entries)] });
+      return message.channel.send({ embeds: [TikTokEmbed.trackedList(entries, botConfig.prefix)] });
     }
 
     if (sub === "add") {
       const username = args[1];
-      if (!username) return message.channel.send({ embeds: [ErrorEmbed.build("Usage: `!tiktok add <username>`")] });
+      const targetChannel = message.mentions.channels.first();
+      if (!username || !targetChannel) return message.channel.send({ embeds: [ErrorEmbed.build("Usage: `!tiktok add <username> #channel`")] });
 
-      const result = await TikTokService.addTrack(message.guildId, message.channelId, username);
-      const msg = result.new ? `Now tracking @${result.username}` : `Updated notification channel for @${result.username}`;
+      const result = await TikTokService.addTrack(message.guildId, targetChannel.id, username);
+      const msg = result.new
+        ? `Now tracking @${result.username} → ${targetChannel}`
+        : `Updated notification channel for @${result.username} → ${targetChannel}`;
       return message.channel.send({ embeds: [SuccessEmbed.build(msg)] });
     }
 

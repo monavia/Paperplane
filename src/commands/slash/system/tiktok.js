@@ -10,7 +10,8 @@ module.exports = {
     .setDescription("Manage TikTok live notifications")
     .addSubcommand((sub) =>
       sub.setName("add").setDescription("Track a TikTok user")
-        .addStringOption((o) => o.setName("username").setDescription("TikTok username or URL").setRequired(true)),
+        .addStringOption((o) => o.setName("username").setDescription("TikTok username or URL").setRequired(true))
+        .addChannelOption((o) => o.setName("channel").setDescription("Channel untuk notifikasi").setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub.setName("remove").setDescription("Stop tracking a TikTok user")
@@ -25,13 +26,16 @@ module.exports = {
 
     if (sub === "list") {
       const entries = await TikTokService.getTracks(interaction.guildId);
-      return interaction.reply({ embeds: [TikTokEmbed.trackedList(entries)] });
+      return interaction.reply({ embeds: [TikTokEmbed.trackedList(entries, "/")] });
     }
 
     if (sub === "add") {
       const username = interaction.options.getString("username");
-      const result = await TikTokService.addTrack(interaction.guildId, interaction.channelId, username);
-      const msg = result.new ? `Now tracking @${result.username}` : `Updated notification channel for @${result.username}`;
+      const targetChannel = interaction.options.getChannel("channel");
+      const result = await TikTokService.addTrack(interaction.guildId, targetChannel.id, username);
+      const msg = result.new
+        ? `Now tracking @${result.username} → ${targetChannel}`
+        : `Updated notification channel for @${result.username} → ${targetChannel}`;
       return interaction.reply({ embeds: [SuccessEmbed.build(msg)] });
     }
 

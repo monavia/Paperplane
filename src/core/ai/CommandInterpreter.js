@@ -1,5 +1,5 @@
 class CommandInterpreter {
-  async interpret(input) {
+  interpret(input) {
     const lower = input.toLowerCase().trim();
 
     // Check no-query commands FIRST so they don't get caught by play pattern

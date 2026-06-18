@@ -64,14 +64,43 @@ module.exports = {
         return message.channel.send({ embeds: [NowPlayingEmbed.build(track)] });
       }
 
-      if (interpreted.type === "playlist" && interpreted.query) {
+      if (interpreted.type === "playlist" && interpreted.songs?.length) {
         const voice = message.member.voice.channel;
         if (!voice) {
           return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         }
-        const { result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author, true);
-        const count = result?.tracks?.length || 1;
-        return message.channel.send({ embeds: [SuccessEmbed.build(`Memutar ${count} lagu: ${track.info.title}`)] });
+        const engine = MusicService.getEngine(message.guildId);
+        const player = await engine.join(voice.id, message.channelId);
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal join voice channel.")] });
+
+        const maxSongs = 50;
+        const toSearch = interpreted.songs.slice(0, maxSongs);
+        const found = [];
+
+        const chunkSize = 5;
+        for (let i = 0; i < toSearch.length; i += chunkSize) {
+          const chunk = toSearch.slice(i, i + chunkSize);
+          const results = await Promise.allSettled(
+            chunk.map((song) => player.search({ query: `ytsearch:${song}` }, message.author))
+          );
+          for (const r of results) {
+            if (r.status === "fulfilled" && r.value?.tracks?.length) found.push(r.value.tracks[0]);
+          }
+        }
+
+        if (!found.length) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang ditemukan.")] });
+
+        if (player.playing || player.paused) {
+          engine.queue.addMultiple(found);
+        } else {
+          engine.queue.clear();
+          engine.queue.addMultiple(found);
+          const first = engine.queue.next();
+          if (first) await player.play({ track: first, clientTrack: first });
+        }
+
+        MusicService.saveState(message.guildId).catch(() => {});
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Memutar ${found.length} lagu dari playlist: ${found[0].info.title}`)] });
       }
 
       if (interpreted.type === "skip") {

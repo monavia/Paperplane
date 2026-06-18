@@ -12,6 +12,10 @@ class AIEngine {
     return true;
   }
 
+  clearMemory(userId) {
+    this.memory.clear(userId);
+  }
+
   async ask(userId, prompt, systemPrompt) {
     const messages = PromptBuilder.build(userId, prompt, systemPrompt, this.memory);
 

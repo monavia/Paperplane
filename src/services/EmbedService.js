@@ -38,7 +38,7 @@ function queue(tracks, page = 1) {
 }
 
 function error(text) {
-  return new EmbedBuilder().setDescription(`${Emojis.ERROR} ${text}`).setColor(Colors.ERROR);
+  return new EmbedBuilder().setDescription(text).setColor(Colors.ERROR);
 }
 
 function success(text) {

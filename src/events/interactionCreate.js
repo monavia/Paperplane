@@ -1,5 +1,6 @@
 const { Events } = require("discord.js");
 const Logger = require("../core/utils/Logger");
+const ErrorEmbed = require("../ui/embeds/ErrorEmbed");
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -11,7 +12,7 @@ module.exports = {
         await command.execute(interaction);
       } catch (err) {
         Logger.error(`Slash error (/${interaction.commandName}):`, err.message);
-        const reply = { content: "An error occurred.", ephemeral: true };
+        const reply = { embeds: [ErrorEmbed.build("An error occurred.")], ephemeral: true };
         if (interaction.replied || interaction.deferred) await interaction.followUp(reply);
         else await interaction.reply(reply);
       }

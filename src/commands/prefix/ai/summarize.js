@@ -1,6 +1,7 @@
 const AIService = require("../../../services/AIService");
 const AIEmbed = require("../../../ui/embeds/AIEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const LoadingEmbed = require("../../../ui/embeds/LoadingEmbed");
 
 module.exports = {
   name: "summarize",
@@ -8,7 +9,7 @@ module.exports = {
     const text = args.join(" ");
     if (!text) return message.channel.send({ embeds: [ErrorEmbed.build("Please provide text to summarize.")] });
 
-    const msg = await message.channel.send("Summarizing...");
+    const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Summarizing...")] });
 
     try {
       const summary = await AIService.summarize(text);

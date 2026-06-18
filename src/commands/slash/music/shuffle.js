@@ -15,7 +15,7 @@ module.exports = {
     const tracks = MusicService.getQueue(interaction.guildId);
     if (!tracks?.length) return interaction.reply({ embeds: [ErrorEmbed.build("Queue is empty.")], ephemeral: true });
 
-    MusicService.shuffle(interaction.guildId);
+    await MusicService.shuffle(interaction.guildId);
     await interaction.reply({ embeds: [SuccessEmbed.build(`Queue shuffled (${tracks.length} tracks).`)] });
   },
 };

@@ -1,6 +1,7 @@
 const AIService = require("../../../services/AIService");
 const AIEmbed = require("../../../ui/embeds/AIEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const LoadingEmbed = require("../../../ui/embeds/LoadingEmbed");
 
 module.exports = {
   name: "ask",
@@ -8,7 +9,7 @@ module.exports = {
     const prompt = args.join(" ");
     if (!prompt) return message.channel.send({ embeds: [ErrorEmbed.build("Please provide a question.")] });
 
-    const msg = await message.channel.send("Thinking...");
+    const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Thinking...")] });
 
     try {
       const answer = await AIService.ask(message.author.id, prompt);

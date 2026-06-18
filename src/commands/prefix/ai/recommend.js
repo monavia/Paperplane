@@ -1,6 +1,7 @@
 const AIService = require("../../../services/AIService");
 const AIEmbed = require("../../../ui/embeds/AIEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const LoadingEmbed = require("../../../ui/embeds/LoadingEmbed");
 
 module.exports = {
   name: "recommend",
@@ -8,7 +9,7 @@ module.exports = {
     const taste = args.join(" ");
     if (!taste) return message.channel.send({ embeds: [ErrorEmbed.build("Please describe your music taste.")] });
 
-    const msg = await message.channel.send("Getting recommendations...");
+    const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Getting recommendations...")] });
 
     try {
       const recs = await AIService.recommend(taste);

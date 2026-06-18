@@ -10,12 +10,15 @@ module.exports = {
 
   async execute(interaction) {
     const voice = interaction.member.voice.channel;
-    if (!voice) return interaction.reply({ embeds: [ErrorEmbed.build("You must be in a voice channel.")], ephemeral: true });
+    if (!voice) return interaction.reply({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")], ephemeral: true });
+
+    const player = MusicService.getEngine(interaction.guildId).player;
+    if (!player) return interaction.reply({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")], ephemeral: true });
 
     const paused = await MusicService.pause(interaction.guildId);
-    if (!paused) return interaction.reply({ embeds: [ErrorEmbed.build("Nothing to pause.")], ephemeral: true });
+    if (!paused) return interaction.reply({ embeds: [ErrorEmbed.build("Gagal menjeda playback.")], ephemeral: true });
 
-    await interaction.reply({ embeds: [SuccessEmbed.build("Playback paused.")] });
+    await interaction.reply({ embeds: [SuccessEmbed.build("Playback dijeda.")] });
   },
 };
 

@@ -6,12 +6,15 @@ module.exports = {
   name: "resume",
   async execute(message, args) {
     const voice = message.member.voice.channel;
-    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
+    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+
+    const player = MusicService.getEngine(message.guildId).player;
+    if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
 
     const resumed = await MusicService.resume(message.guildId);
-    if (!resumed) return message.channel.send({ embeds: [ErrorEmbed.build("Nothing to resume.")] });
+    if (!resumed) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal melanjutkan playback.")] });
 
-    await message.channel.send({ embeds: [SuccessEmbed.build("Playback resumed.")] });
+    await message.channel.send({ embeds: [SuccessEmbed.build("Playback dilanjutkan.")] });
   },
 };
 

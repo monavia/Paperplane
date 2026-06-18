@@ -2,6 +2,7 @@ const MusicService = require("../../../services/MusicService");
 const NowPlayingEmbed = require("../../../ui/embeds/NowPlayingEmbed");
 const SuccessEmbed = require("../../../ui/embeds/SuccessEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const LoadingEmbed = require("../../../ui/embeds/LoadingEmbed");
 const Logger = require("../../../core/utils/Logger");
 
 module.exports = {
@@ -14,7 +15,7 @@ module.exports = {
     const voice = message.member.voice.channel;
     if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
 
-    const msg = await message.channel.send("Searching...");
+    const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
 
     try {
       const { engine, result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, query, message.author);

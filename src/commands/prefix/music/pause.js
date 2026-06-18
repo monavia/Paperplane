@@ -6,12 +6,15 @@ module.exports = {
   name: "pause",
   async execute(message, args) {
     const voice = message.member.voice.channel;
-    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
+    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+
+    const player = MusicService.getEngine(message.guildId).player;
+    if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
 
     const paused = await MusicService.pause(message.guildId);
-    if (!paused) return message.channel.send({ embeds: [ErrorEmbed.build("Nothing to pause.")] });
+    if (!paused) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal menjeda playback.")] });
 
-    await message.channel.send({ embeds: [SuccessEmbed.build("Playback paused.")] });
+    await message.channel.send({ embeds: [SuccessEmbed.build("Playback dijeda.")] });
   },
 };
 

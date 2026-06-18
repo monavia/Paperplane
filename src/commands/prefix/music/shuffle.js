@@ -11,7 +11,7 @@ module.exports = {
     const tracks = MusicService.getQueue(message.guildId);
     if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Queue is empty.")] });
 
-    MusicService.shuffle(message.guildId);
+    await MusicService.shuffle(message.guildId);
     await message.channel.send({ embeds: [SuccessEmbed.build(`Queue shuffled (${tracks.length} tracks).`)] });
   },
 };

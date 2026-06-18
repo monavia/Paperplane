@@ -1,12 +1,27 @@
 class CommandInterpreter {
-  async interpret(naturalInput) {
-    const lower = naturalInput.toLowerCase();
-    if (lower.startsWith("play ") || lower.startsWith("play ")) return { type: "play", query: naturalInput.replace(/^(play|put on|play me)\s+/i, "") };
-    if (lower.startsWith("skip")) return { type: "skip" };
-    if (lower.startsWith("stop")) return { type: "stop" };
-    if (lower.startsWith("pause")) return { type: "pause" };
-    if (lower.startsWith("resume") || lower.startsWith("unpause")) return { type: "resume" };
-    if (lower.startsWith("queue") || lower.startsWith("what's playing")) return { type: "queue" };
+  async interpret(input) {
+    const lower = input.toLowerCase().trim();
+
+    // Play — English & Indonesian
+    const playPattern = /^(?:play|put on|play me|mainkan|putar|cari)\s+(?:lagu\s+)?(.+)/i;
+    const playMatch = input.match(playPattern);
+    if (playMatch) return { type: "play", query: playMatch[1].trim() };
+
+    // Skip
+    if (/^(?:skip|lewati|lompati|lanjut)\b/i.test(lower)) return { type: "skip" };
+
+    // Stop
+    if (/^(?:stop|berhenti|matikan|setop)\b/i.test(lower)) return { type: "stop" };
+
+    // Pause
+    if (/^(?:pause|jeda|tahan)\b/i.test(lower)) return { type: "pause" };
+
+    // Resume
+    if (/^(?:resume|unpause|lanjutkan|mainkan lagi)\b/i.test(lower)) return { type: "resume" };
+
+    // Queue
+    if (/^(?:queue|antrian|lagu apa|lagu sekarang)\b/i.test(lower)) return { type: "queue" };
+
     return { type: "chat" };
   }
 }

@@ -1,6 +1,7 @@
 const AIService = require("../../../services/AIService");
 const AIEmbed = require("../../../ui/embeds/AIEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
+const LoadingEmbed = require("../../../ui/embeds/LoadingEmbed");
 
 module.exports = {
   name: "imagine",
@@ -8,7 +9,7 @@ module.exports = {
     const idea = args.join(" ");
     if (!idea) return message.channel.send({ embeds: [ErrorEmbed.build("Please describe what to generate.")] });
 
-    const msg = await message.channel.send("Generating prompt...");
+    const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Generating prompt...")] });
 
     try {
       const dallePrompt = await AIService.imagine(idea);

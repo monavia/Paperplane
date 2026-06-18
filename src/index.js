@@ -20,6 +20,8 @@ const client = new Client({
   partials: [Partials.Channel, Partials.Message],
 });
 
+let heartbeatTimer;
+
 loadEvents(client);
 
 client.once("clientReady", async () => {
@@ -39,8 +41,23 @@ client.once("clientReady", async () => {
     Logger.warn("Ollama server unreachable — AI features disabled");
   }
 
-  if (dbAvailable) loadTikTok(client);
-  else Logger.warn("Database required for TikTok notifications — skipping");
+  if (dbAvailable) {
+    loadTikTok(client);
+    const { restoreAllStates, saveState } = require("./services/MusicService");
+    await restoreAllStates(client);
+
+    heartbeatTimer = setInterval(() => {
+      const { get: getLavalink } = require("./core/music/lavalink");
+      const lavalink = getLavalink();
+      if (lavalink?.players) {
+        for (const [guildId] of lavalink.players) {
+          saveState(guildId);
+        }
+      }
+    }, 30000);
+  } else {
+    Logger.warn("Database required for TikTok notifications — skipping");
+  }
 
   const commandsData = getSlashData(client);
   await deploy(commandsData);
@@ -56,13 +73,17 @@ client.once("clientReady", async () => {
 async function shutdown() {
   Logger.warn("Shutting down...");
 
+  if (heartbeatTimer) clearInterval(heartbeatTimer);
+
+  const { saveState } = require("./services/MusicService");
   const { stop: stopTikTok } = require("./services/TikTokService");
   stopTikTok();
 
   const { get: getLavalink } = require("./core/music/lavalink");
   const lavalink = getLavalink();
   if (lavalink) {
-    for (const [, player] of lavalink.players || []) {
+    for (const [guildId, player] of lavalink.players || []) {
+      await saveState(guildId);
       player.destroy();
     }
     await lavalink.nodeManager?.disconnectAll();

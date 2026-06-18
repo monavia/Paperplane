@@ -6,11 +6,14 @@ module.exports = {
   name: "skip",
   async execute(message, args) {
     const voice = message.member.voice.channel;
-    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
+    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+
+    const player = MusicService.getEngine(message.guildId).player;
+    if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
 
     try {
       await MusicService.skip(message.guildId);
-      await message.channel.send({ embeds: [SuccessEmbed.build("Skipped to next track.")] });
+      await message.channel.send({ embeds: [SuccessEmbed.build("Lagu dilewati.")] });
     } catch (err) {
       await message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });
     }

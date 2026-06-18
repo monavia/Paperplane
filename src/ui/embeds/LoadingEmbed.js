@@ -4,7 +4,7 @@ const Colors = require("../../core/constants/Colors");
 function build(text) {
   return new EmbedBuilder()
     .setDescription(text)
-    .setColor(Colors.ERROR);
+    .setColor(Colors.INFO);
 }
 
 module.exports = { build };

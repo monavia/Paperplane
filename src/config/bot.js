@@ -7,3 +7,8 @@ module.exports = {
   prefix: process.env.PREFIX || "!",
   owners: (process.env.OWNERS || "").split(",").map((s) => s.trim()).filter(Boolean),
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

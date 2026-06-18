@@ -18,3 +18,8 @@ function addedToQueue(track, position) {
 }
 
 module.exports = { build, addedToQueue };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

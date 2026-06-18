@@ -16,3 +16,8 @@ module.exports = {
     await message.channel.send({ embeds: [SuccessEmbed.build(`Volume set to ${formatVolume(level)}`)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

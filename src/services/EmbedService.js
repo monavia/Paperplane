@@ -86,3 +86,8 @@ function stats(client) {
 }
 
 module.exports = { nowPlaying, queue, error, success, info, ai, ping, stats };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

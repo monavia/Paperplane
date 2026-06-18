@@ -6,3 +6,8 @@ module.exports = {
   temperature: Number(process.env.AI_TEMPERATURE) || 0.7,
   maxTokens: Number(process.env.AI_MAX_TOKENS) || 2048,
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

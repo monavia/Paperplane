@@ -13,3 +13,8 @@ module.exports = {
     await message.channel.send({ embeds: [SuccessEmbed.build(`Autoplay ${status}.`)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

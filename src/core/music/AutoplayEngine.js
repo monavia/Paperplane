@@ -21,3 +21,8 @@ class AutoplayEngine {
 }
 
 module.exports = AutoplayEngine;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

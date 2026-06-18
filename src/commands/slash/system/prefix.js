@@ -24,3 +24,8 @@ module.exports = {
     await interaction.reply({ embeds: [SuccessEmbed.build(`Prefix changed to \`${newPrefix}\``)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

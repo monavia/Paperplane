@@ -7,3 +7,8 @@ module.exports = {
   autoLeaveCooldown: 60000,
   defaultSearchPlatform: "ytsearch",
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

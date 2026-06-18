@@ -9,3 +9,8 @@ module.exports = {
     await sent.edit({ content: null, embeds: [PingEmbed.build(botLatency, apiLatency)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

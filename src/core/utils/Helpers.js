@@ -27,3 +27,8 @@ function formatNumber(n) {
 }
 
 module.exports = { chunkArray, escapeMarkdown, truncate, shuffle, formatNumber };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

@@ -11,3 +11,8 @@ module.exports = {
     await message.channel.send({ embeds: [QueueEmbed.build(tracks)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

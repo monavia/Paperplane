@@ -7,3 +7,8 @@ module.exports = {
     Logger.info(`Joined guild: ${guild.name} (${guild.id})`);
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

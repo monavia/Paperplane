@@ -12,3 +12,8 @@ class YoutubeResolver extends Resolver {
 }
 
 module.exports = YoutubeResolver;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

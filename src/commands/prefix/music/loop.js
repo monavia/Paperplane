@@ -17,3 +17,8 @@ module.exports = {
     await message.channel.send({ embeds: [SuccessEmbed.build(`Loop mode set to \`${mode}\`.`)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

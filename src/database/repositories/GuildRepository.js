@@ -31,3 +31,8 @@ class GuildRepository {
 }
 
 module.exports = new GuildRepository();
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

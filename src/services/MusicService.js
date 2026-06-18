@@ -80,3 +80,8 @@ function shuffle(guildId) {
 module.exports = {
   getEngine, destroyEngine, play, skip, stop, pause, resume, setVolume, getQueue, shuffle,
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

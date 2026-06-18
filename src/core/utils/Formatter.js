@@ -25,3 +25,8 @@ function formatVolume(volume) {
 }
 
 module.exports = { formatTrack, formatTrackCompact, formatPlaylist, formatVolume };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

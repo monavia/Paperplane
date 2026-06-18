@@ -18,3 +18,8 @@ module.exports = {
     await interaction.reply({ embeds: [SuccessEmbed.build("Playback resumed.")] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

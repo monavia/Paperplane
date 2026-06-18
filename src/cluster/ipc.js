@@ -19,3 +19,8 @@ class IPC {
 }
 
 module.exports = new IPC();
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

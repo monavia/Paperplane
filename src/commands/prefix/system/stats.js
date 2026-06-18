@@ -6,3 +6,8 @@ module.exports = {
     await message.channel.send({ embeds: [StatsEmbed.build(message.client)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

@@ -24,3 +24,8 @@ class ConversationStore {
 }
 
 module.exports = ConversationStore;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

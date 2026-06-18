@@ -15,3 +15,8 @@ module.exports = {
     await interaction.reply({ embeds: [QueueEmbed.build(tracks)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

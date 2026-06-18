@@ -17,3 +17,8 @@ guildSchema.pre("save", function (next) {
 });
 
 module.exports = mongoose.model("Guild", guildSchema);
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

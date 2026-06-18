@@ -30,6 +30,14 @@ client.once("clientReady", async () => {
   const dbAvailable = await loadDatabase();
   if (!dbAvailable) Logger.warn("Running without database — prefix changes won't persist");
 
+  try {
+    const res = await fetch(`${require("./config/ai").host}/api/version`);
+    if (res.ok) Logger.ready(`Ollama connected (v${(await res.json()).version})`);
+    else Logger.warn("Ollama server unreachable — AI features disabled");
+  } catch {
+    Logger.warn("Ollama server unreachable — AI features disabled");
+  }
+
   const commandsData = getSlashData(client);
   await deploy(commandsData);
 
@@ -64,3 +72,8 @@ process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
 
 client.login(botConfig.token);
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

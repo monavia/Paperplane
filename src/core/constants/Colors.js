@@ -10,3 +10,8 @@ module.exports = {
   STATS: 0xf39c12,
   NOWPLAYING: 0xe91e63,
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

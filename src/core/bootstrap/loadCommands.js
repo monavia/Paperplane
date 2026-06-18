@@ -62,3 +62,8 @@ function getSlashData(client) {
 }
 
 module.exports = { loadSlash, loadPrefix, getSlashData };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

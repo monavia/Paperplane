@@ -34,3 +34,8 @@ function hasPlayer(guildId) {
 }
 
 module.exports = { getPlayer, createPlayer, destroyPlayer, hasPlayer };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

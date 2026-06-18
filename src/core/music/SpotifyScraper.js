@@ -13,3 +13,8 @@ class SpotifyScraper {
 }
 
 module.exports = SpotifyScraper;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

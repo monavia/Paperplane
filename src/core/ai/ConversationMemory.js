@@ -24,3 +24,8 @@ class ConversationMemory {
 }
 
 module.exports = ConversationMemory;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

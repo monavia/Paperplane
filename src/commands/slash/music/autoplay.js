@@ -17,3 +17,8 @@ module.exports = {
     await interaction.reply({ embeds: [SuccessEmbed.build(`Autoplay ${status}.`)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

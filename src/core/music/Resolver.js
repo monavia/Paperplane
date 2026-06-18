@@ -13,3 +13,8 @@ class Resolver {
 }
 
 module.exports = Resolver;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

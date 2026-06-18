@@ -19,3 +19,8 @@ async function recommend(taste, count) {
 }
 
 module.exports = { ask, summarize, imagine, recommend };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

@@ -14,3 +14,8 @@ module.exports = {
     await message.channel.send({ embeds: [SuccessEmbed.build("Playback paused.")] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

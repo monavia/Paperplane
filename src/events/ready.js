@@ -7,3 +7,8 @@ module.exports = {
     Logger.ready(`Logged in as ${client.user.tag}`);
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

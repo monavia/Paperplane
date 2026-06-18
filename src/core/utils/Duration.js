@@ -23,3 +23,8 @@ function progressBar(current, total, length = 16) {
 }
 
 module.exports = { parseDuration, parseTimestamp, progressBar };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

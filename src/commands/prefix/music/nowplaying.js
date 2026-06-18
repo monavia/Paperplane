@@ -13,3 +13,8 @@ module.exports = {
     await message.channel.send({ embeds: [NowPlayingEmbed.build(track, player)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

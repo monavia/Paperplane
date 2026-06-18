@@ -23,3 +23,8 @@ module.exports = {
     await message.channel.send({ embeds: [SuccessEmbed.build(`Seeked to ${parseDuration(ms)}.`)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

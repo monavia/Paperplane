@@ -19,3 +19,8 @@ const shard = {
 };
 
 module.exports = shard;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

@@ -10,3 +10,8 @@ module.exports = {
     await interaction.reply({ embeds: [StatsEmbed.build(interaction.client)] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

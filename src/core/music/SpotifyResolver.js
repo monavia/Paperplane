@@ -12,3 +12,8 @@ class SpotifyResolver extends Resolver {
 }
 
 module.exports = SpotifyResolver;
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

@@ -40,3 +40,8 @@ function register(client) {
 }
 
 module.exports = { register };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

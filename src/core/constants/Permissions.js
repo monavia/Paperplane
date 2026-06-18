@@ -19,3 +19,8 @@ module.exports = {
   ADD_REACTIONS: "AddReactions",
   SEND_MESSAGES: "SendMessages",
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

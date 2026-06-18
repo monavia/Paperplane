@@ -12,3 +12,8 @@ async function load(client) {
 }
 
 module.exports = { load };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

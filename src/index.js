@@ -7,7 +7,7 @@ const { load: loadEvents } = require("./core/bootstrap/loadEvents");
 const { load: loadLavalink } = require("./core/bootstrap/loadLavalink");
 const { load: loadDatabase } = require("./core/bootstrap/loadDatabase");
 const { deploy } = require("./core/bootstrap/deployCommands");
-const { load: loadTikTok } = require("./core/bootstrap/loadTikTok");
+
 
 const client = new Client({
   intents: [
@@ -42,7 +42,6 @@ client.once("clientReady", async () => {
   }
 
   if (dbAvailable) {
-    loadTikTok(client);
     const { restoreAllStates, saveState } = require("./services/MusicService");
     await restoreAllStates(client);
 
@@ -76,8 +75,6 @@ async function shutdown() {
   if (heartbeatTimer) clearInterval(heartbeatTimer);
 
   const { saveState } = require("./services/MusicService");
-  const { stop: stopTikTok } = require("./services/TikTokService");
-  stopTikTok();
 
   const { get: getLavalink } = require("./core/music/lavalink");
   const lavalink = getLavalink();

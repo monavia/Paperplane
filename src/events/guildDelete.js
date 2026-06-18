@@ -6,7 +6,7 @@ module.exports = {
   name: Events.GuildDelete,
   async execute(guild) {
     Logger.info(`Left guild: ${guild.name} (${guild.id})`);
-    destroyEngine(guild.id);
+    await destroyEngine(guild.id);
   },
 };
 

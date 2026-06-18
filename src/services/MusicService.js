@@ -9,8 +9,13 @@ function getEngine(guildId) {
   return engines.get(guildId);
 }
 
-function destroyEngine(guildId) {
+async function destroyEngine(guildId) {
+  const engine = engines.get(guildId);
+  if (engine) {
+    engine.queue.clear();
+  }
   engines.delete(guildId);
+  await deleteState(guildId);
 }
 
 async function saveState(guildId) {
@@ -189,8 +194,7 @@ async function skip(guildId) {
 async function stop(guildId) {
   const engine = getEngine(guildId);
   await engine.disconnect();
-  destroyEngine(guildId);
-  await deleteState(guildId);
+  await destroyEngine(guildId);
 }
 
 async function pause(guildId) {

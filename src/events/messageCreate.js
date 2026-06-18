@@ -183,10 +183,6 @@ module.exports = {
                 "`" + `${prefix}` + "help` — Bantuan ini\n" +
                 "`" + `${prefix}` + "info` — Info bot\n" +
                 "`" + `${prefix}` + "stats` — Statistik bot\n" +
-                "`" + `${prefix}` + "tiktok channel #channel` — Set channel notifikasi\n" +
-                "`" + `${prefix}` + "tiktok add <user>` — Pantau TikTok\n" +
-                "`" + `${prefix}` + "tiktok remove <user>` — Hentikan pantauan\n" +
-                "`" + `${prefix}` + "tiktok list` — Lihat daftar pantauan\n" +
                 "`" + `${prefix}` + "prefix` — Ganti prefix",
             },
             {

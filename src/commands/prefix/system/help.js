@@ -36,10 +36,6 @@ module.exports = {
             "`!help` — Bantuan ini\n" +
             "`!info` — Info bot\n" +
             "`!stats` — Statistik bot\n" +
-            "`!tiktok channel #channel` — Set channel notifikasi\n" +
-            "`!tiktok add <user>` — Pantau TikTok\n" +
-            "`!tiktok remove <user>` — Hentikan pantauan\n" +
-            "`!tiktok list` — Lihat daftar pantauan\n" +
             "`!prefix` — Ganti prefix",
         },
       )

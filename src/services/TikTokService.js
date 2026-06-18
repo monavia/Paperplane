@@ -1,5 +1,6 @@
 const tiktokConfig = require("../config/tiktok");
 const TikTok = require("../database/models/TikTok");
+const Guild = require("../database/models/Guild");
 const TikTokEmbed = require("../ui/embeds/TikTokEmbed");
 const Logger = require("../core/utils/Logger");
 
@@ -59,7 +60,9 @@ async function checkUser(entry) {
     const guild = client.guilds.cache.get(entry.guildId);
     if (!guild) return;
 
-    const channel = guild.channels.cache.get(entry.channelId);
+    const guildConfig = await Guild.findOne({ guildId: entry.guildId });
+    const channelId = guildConfig?.tiktokChannel || entry.channelId;
+    const channel = guild.channels.cache.get(channelId);
     if (!channel) return;
 
     const embed = TikTokEmbed.liveNotification(entry.username);
@@ -108,22 +111,40 @@ async function isLive(username) {
   }
 }
 
-async function addTrack(guildId, channelId, username) {
-  const clean = username.replace(/^@/, "").replace(/https?:\/\/(www\.)?tiktok\.com\//, "").replace(/\/?$/,"");
+async function setChannel(guildId, channelId) {
+  await Guild.findOneAndUpdate(
+    { guildId },
+    { tiktokChannel: channelId },
+    { upsert: true },
+  );
+}
+
+async function getChannel(guildId) {
+  const guildConfig = await Guild.findOne({ guildId });
+  return guildConfig?.tiktokChannel || null;
+}
+
+async function addTrack(guildId, username) {
+  const clean = username.replace(/^@/, "").replace(/https?:\/\/(www\.)?tiktok\.com\//, "").replace(/\/?$/, "");
+
+  const guildConfig = await Guild.findOne({ guildId });
+  if (!guildConfig?.tiktokChannel) {
+    throw new Error("Set notification channel dulu dengan `!tiktok channel #channel`");
+  }
 
   const existing = await TikTok.findOne({ guildId, username: clean });
   if (existing) {
-    existing.channelId = channelId;
+    existing.isLive = false;
     await existing.save();
     return { new: false, username: clean };
   }
 
-  await TikTok.create({ guildId, channelId, username: clean });
+  await TikTok.create({ guildId, channelId: guildConfig.tiktokChannel, username: clean });
   return { new: true, username: clean };
 }
 
 async function removeTrack(guildId, username) {
-  const clean = username.replace(/^@/, "").replace(/https?:\/\/(www\.)?tiktok\.com\//, "").replace(/\/?$/,"");
+  const clean = username.replace(/^@/, "").replace(/https?:\/\/(www\.)?tiktok\.com\//, "").replace(/\/?$/, "");
   const result = await TikTok.deleteOne({ guildId, username: clean });
   return result.deletedCount > 0;
 }
@@ -132,4 +153,9 @@ async function getTracks(guildId) {
   return TikTok.find({ guildId }).sort({ username: 1 });
 }
 
-module.exports = { init, start, stop, addTrack, removeTrack, getTracks };
+module.exports = { init, start, stop, setChannel, getChannel, addTrack, removeTrack, getTracks };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

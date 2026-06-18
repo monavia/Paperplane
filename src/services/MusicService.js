@@ -99,7 +99,7 @@ async function restoreAllStates(client) {
   }
 }
 
-async function play(guildId, voiceChannelId, textChannelId, query, user) {
+async function play(guildId, voiceChannelId, textChannelId, query, user, multi = false) {
   const engine = getEngine(guildId);
   const player = await engine.join(voiceChannelId, textChannelId);
   if (!player) throw new Error("Failed to create player");
@@ -150,11 +150,15 @@ async function play(guildId, voiceChannelId, textChannelId, query, user) {
     };
   }
 
-  const result = await player.search({ query }, user);
+  const searchQuery = multi && !query.startsWith("ytsearch:") && !query.startsWith("http")
+    ? `ytsearch:${query}`
+    : query;
+
+  const result = await player.search({ query: searchQuery }, user);
   if (!result?.tracks?.length) throw new Error("No results found");
 
   const isPlaylist = result.loadType === "playlist";
-  const tracks = isPlaylist ? result.tracks : [result.tracks[0]];
+  const tracks = (isPlaylist || multi) ? result.tracks.slice(0, 20) : [result.tracks[0]];
 
   if (player.playing || player.paused) {
     engine.queue.addMultiple(tracks);

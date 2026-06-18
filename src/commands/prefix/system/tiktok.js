@@ -11,19 +11,32 @@ module.exports = {
 
     if (!sub || sub === "list") {
       const entries = await TikTokService.getTracks(message.guildId);
-      return message.channel.send({ embeds: [TikTokEmbed.trackedList(entries, botConfig.prefix)] });
+      const channelId = await TikTokService.getChannel(message.guildId);
+      const channel = channelId ? message.guild.channels.cache.get(channelId) : null;
+      return message.channel.send({ embeds: [TikTokEmbed.trackedList(entries, channel, botConfig.prefix)] });
+    }
+
+    if (sub === "channel") {
+      const targetChannel = message.mentions.channels.first();
+      if (!targetChannel) return message.channel.send({ embeds: [ErrorEmbed.build("Usage: `!tiktok channel #channel`")] });
+
+      await TikTokService.setChannel(message.guildId, targetChannel.id);
+      return message.channel.send({ embeds: [SuccessEmbed.build(`Notifikasi TikTok akan dikirim ke ${targetChannel}`)] });
     }
 
     if (sub === "add") {
       const username = args[1];
-      const targetChannel = message.mentions.channels.first();
-      if (!username || !targetChannel) return message.channel.send({ embeds: [ErrorEmbed.build("Usage: `!tiktok add <username> #channel`")] });
+      if (!username) return message.channel.send({ embeds: [ErrorEmbed.build("Usage: `!tiktok add <username>`")] });
 
-      const result = await TikTokService.addTrack(message.guildId, targetChannel.id, username);
-      const msg = result.new
-        ? `Now tracking @${result.username} → ${targetChannel}`
-        : `Updated notification channel for @${result.username} → ${targetChannel}`;
-      return message.channel.send({ embeds: [SuccessEmbed.build(msg)] });
+      try {
+        const result = await TikTokService.addTrack(message.guildId, username);
+        const msg = result.new
+          ? `Now tracking @${result.username}`
+          : `Updated tracking for @${result.username}`;
+        return message.channel.send({ embeds: [SuccessEmbed.build(msg)] });
+      } catch (err) {
+        return message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });
+      }
     }
 
     if (sub === "remove") {
@@ -35,6 +48,11 @@ module.exports = {
       return message.channel.send({ embeds: [SuccessEmbed.build(`Stopped tracking @${username.replace(/^@/, "")}`)] });
     }
 
-    message.channel.send({ embeds: [ErrorEmbed.build("Unknown subcommand. Use: `add`, `remove`, `list`")] });
+    message.channel.send({ embeds: [ErrorEmbed.build("Unknown subcommand. Use: `channel`, `add`, `remove`, `list`")] });
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

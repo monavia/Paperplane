@@ -64,6 +64,16 @@ module.exports = {
         return message.channel.send({ embeds: [NowPlayingEmbed.build(track)] });
       }
 
+      if (interpreted.type === "playlist" && interpreted.query) {
+        const voice = message.member.voice.channel;
+        if (!voice) {
+          return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+        }
+        const { result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author, true);
+        const count = result?.tracks?.length || 1;
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Memutar ${count} lagu: ${track.info.title}`)] });
+      }
+
       if (interpreted.type === "skip") {
         const voice = message.member.voice.channel;
         if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });

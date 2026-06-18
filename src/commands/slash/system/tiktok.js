@@ -9,9 +9,12 @@ module.exports = {
     .setName("tiktok")
     .setDescription("Manage TikTok live notifications")
     .addSubcommand((sub) =>
-      sub.setName("add").setDescription("Track a TikTok user")
-        .addStringOption((o) => o.setName("username").setDescription("TikTok username or URL").setRequired(true))
+      sub.setName("channel").setDescription("Set notification channel for TikTok live alerts")
         .addChannelOption((o) => o.setName("channel").setDescription("Channel untuk notifikasi").setRequired(true)),
+    )
+    .addSubcommand((sub) =>
+      sub.setName("add").setDescription("Track a TikTok user")
+        .addStringOption((o) => o.setName("username").setDescription("TikTok username or URL").setRequired(true)),
     )
     .addSubcommand((sub) =>
       sub.setName("remove").setDescription("Stop tracking a TikTok user")
@@ -26,17 +29,28 @@ module.exports = {
 
     if (sub === "list") {
       const entries = await TikTokService.getTracks(interaction.guildId);
-      return interaction.reply({ embeds: [TikTokEmbed.trackedList(entries, "/")] });
+      const channelId = await TikTokService.getChannel(interaction.guildId);
+      const channel = channelId ? interaction.guild.channels.cache.get(channelId) : null;
+      return interaction.reply({ embeds: [TikTokEmbed.trackedList(entries, channel, "/")] });
+    }
+
+    if (sub === "channel") {
+      const targetChannel = interaction.options.getChannel("channel");
+      await TikTokService.setChannel(interaction.guildId, targetChannel.id);
+      return interaction.reply({ embeds: [SuccessEmbed.build(`Notifikasi TikTok akan dikirim ke ${targetChannel}`)] });
     }
 
     if (sub === "add") {
       const username = interaction.options.getString("username");
-      const targetChannel = interaction.options.getChannel("channel");
-      const result = await TikTokService.addTrack(interaction.guildId, targetChannel.id, username);
-      const msg = result.new
-        ? `Now tracking @${result.username} → ${targetChannel}`
-        : `Updated notification channel for @${result.username} → ${targetChannel}`;
-      return interaction.reply({ embeds: [SuccessEmbed.build(msg)] });
+      try {
+        const result = await TikTokService.addTrack(interaction.guildId, username);
+        const msg = result.new
+          ? `Now tracking @${result.username}`
+          : `Updated tracking for @${result.username}`;
+        return interaction.reply({ embeds: [SuccessEmbed.build(msg)] });
+      } catch (err) {
+        return interaction.reply({ embeds: [ErrorEmbed.build(err.message)] });
+      }
     }
 
     if (sub === "remove") {
@@ -47,3 +61,8 @@ module.exports = {
     }
   },
 };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

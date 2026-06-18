@@ -27,9 +27,6 @@ module.exports = {
         {
           name: "🤖 AI",
           value:
-            "`!ask <pertanyaan>` — Tanya AI\n" +
-            "`!summarize <teks>` — Ringkas teks\n" +
-            "`!imagine <deskripsi>` — Buat gambar\n" +
             "`!recommend` — Rekomendasi lagu",
         },
         {
@@ -39,7 +36,8 @@ module.exports = {
             "`!help` — Bantuan ini\n" +
             "`!info` — Info bot\n" +
             "`!stats` — Statistik bot\n" +
-            "`!tiktok add <user> #channel` — Pantau TikTok\n" +
+            "`!tiktok channel #channel` — Set channel notifikasi\n" +
+            "`!tiktok add <user>` — Pantau TikTok\n" +
             "`!tiktok remove <user>` — Hentikan pantauan\n" +
             "`!tiktok list` — Lihat daftar pantauan\n" +
             "`!prefix` — Ganti prefix",

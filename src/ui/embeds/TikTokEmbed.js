@@ -11,15 +11,21 @@ function liveNotification(username) {
     .setTimestamp();
 }
 
-function trackedList(entries, prefix = "!") {
+function trackedList(entries, channel = null, prefix = "!") {
+  const channelSuffix = channel ? ` ${channel}` : "";
   const desc = entries.length
     ? entries.map((e, i) => `${i + 1}. @${e.username} ${e.isLive ? "🔴 LIVE" : "⚫ Offline"}`).join("\n")
-    : `Used command \`${prefix}tiktok add\`, \`${prefix}tiktok list\`, \`${prefix}tiktok remove\``;
+    : `Gunakan \`${prefix}tiktok add <username>\` untuk menambahkan.`;
 
   return new EmbedBuilder()
-    .setTitle("Tracked TikTok Users")
+    .setTitle(`Tracked TikTok Users${channelSuffix}`)
     .setDescription(desc)
     .setColor(Colors.PRIMARY);
 }
 
 module.exports = { liveNotification, trackedList };
+
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

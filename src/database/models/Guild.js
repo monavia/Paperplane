@@ -7,6 +7,7 @@ const guildSchema = new mongoose.Schema({
   djRole: { type: String, default: null },
   announceTracks: { type: Boolean, default: true },
   aiChannel: { type: String, default: null },
+  tiktokChannel: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

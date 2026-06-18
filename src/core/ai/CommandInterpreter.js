@@ -4,6 +4,7 @@ class CommandInterpreter {
 
     // Check no-query commands FIRST so they don't get caught by play pattern
     if (/^(?:help|info|bantuan)\b/i.test(lower)) return { type: "help" };
+    if (/^(?:nowplaying|np|lagu sekarang|lagu ini)\b/i.test(lower)) return { type: "nowplaying" };
     if (/^(?:skip|lewati|lompati|lanjut)\b/i.test(lower)) return { type: "skip" };
     if (/^(?:stop|berhenti|matikan|setop)\b/i.test(lower)) return { type: "stop" };
     if (/^(?:pause|jeda|tahan)\b/i.test(lower)) return { type: "pause" };

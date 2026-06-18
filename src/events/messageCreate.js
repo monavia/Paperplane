@@ -3,6 +3,7 @@ const botConfig = require("../config/bot");
 const AIEngine = require("../core/ai/AIEngine");
 const AIDJ = require("../core/ai/AIDJ");
 const MusicService = require("../services/MusicService");
+const { getPlayer } = require("../core/music/PlayerManager");
 const ErrorEmbed = require("../ui/embeds/ErrorEmbed");
 const SuccessEmbed = require("../ui/embeds/SuccessEmbed");
 const NowPlayingEmbed = require("../ui/embeds/NowPlayingEmbed");
@@ -145,6 +146,13 @@ module.exports = {
         const tracks = MusicService.getQueue(message.guildId);
         if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
         return message.channel.send({ embeds: [QueueEmbed.build(tracks)] });
+      }
+
+      if (interpreted.type === "nowplaying") {
+        const player = getPlayer(message.guildId);
+        const track = player?.queue?.current;
+        if (!track) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        return message.channel.send({ embeds: [NowPlayingEmbed.build(track, player)] });
       }
 
       if (interpreted.type === "help") {

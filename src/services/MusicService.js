@@ -214,7 +214,10 @@ function setVolume(guildId, volume) {
 
 function getQueue(guildId) {
   const engine = getEngine(guildId);
-  return engine.queue.getAll();
+  const current = engine.player?.queue?.current;
+  const upcoming = engine.queue.getAll();
+  if (!current) return upcoming;
+  return [current, ...upcoming];
 }
 
 async function shuffle(guildId) {

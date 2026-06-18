@@ -4,7 +4,7 @@ const Emojis = require("../../core/constants/Emojis");
 
 function build(track, player) {
   return new EmbedBuilder()
-    .setDescription(`Added [${track.info.title || "Unknown"}](${track.info.uri || ""})`)
+    .setDescription(`Now Playing [${track.info.title || "Unknown"}](${track.info.uri || ""})`)
     .setColor(Colors.NOWPLAYING);
 }
 

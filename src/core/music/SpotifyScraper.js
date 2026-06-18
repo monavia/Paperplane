@@ -25,19 +25,47 @@ class SpotifyScraper {
   }
 
   async scrapePlaylist(id) {
-    const html = await this._fetchPage(`https://open.spotify.com/playlist/${id}`);
-    return this._extractTracks(html, id);
+    const data = await this._fetchEntity("playlist", id);
+    if (!data?.entity?.trackList) {
+      throw new Error("Could not extract playlist data from Spotify");
+    }
+    return data.entity.trackList.map((t) => ({
+      name: t.title,
+      artists: t.subtitle ? [t.subtitle] : [],
+      query: `${t.subtitle || ""} ${t.title}`.trim(),
+    }));
   }
 
   async scrapeTrack(id) {
-    const html = await this._fetchPage(`https://open.spotify.com/track/${id}`);
-    const tracks = this._extractTracks(html, id);
-    return tracks.slice(0, 1);
+    const data = await this._fetchEntity("track", id);
+    if (!data?.entity) {
+      throw new Error("Could not extract track data from Spotify");
+    }
+    const e = data.entity;
+    const artistNames = (e.artists || []).map((a) => a.name).filter(Boolean);
+    return [
+      {
+        name: e.title || e.name || "",
+        artists: artistNames,
+        query: `${artistNames.join(" ")} ${e.title || e.name || ""}`.trim(),
+      },
+    ];
   }
 
   async scrapeAlbum(id) {
+    // Album embed returns 404 — try the main page
     const html = await this._fetchPage(`https://open.spotify.com/album/${id}`);
-    return this._extractTracks(html, id);
+    const tracks = this._extractFromHtml(html);
+    if (tracks?.length) return tracks;
+    throw new Error("Could not extract track data from Spotify album — albums are not supported without API access");
+  }
+
+  async _fetchEntity(type, id) {
+    const html = await this._fetchPage(`https://open.spotify.com/embed/${type}/${id}`);
+    const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/s);
+    if (!match) return null;
+    const json = JSON.parse(match[1]);
+    return json.props?.pageProps?.state?.data || null;
   }
 
   async _fetchPage(url) {
@@ -46,8 +74,18 @@ class SpotifyScraper {
     return res.text();
   }
 
-  _extractTracks(html, id) {
-    // Try 1: base64 session data in <script type="text/json">
+  _extractFromHtml(html) {
+    // Try __NEXT_DATA__ first
+    const nextMatch = html.match(/<script id="__NEXT_DATA__"[^>]*type="application\/json"[^>]*>({.+?})<\/script>/s);
+    if (nextMatch) {
+      try {
+        const data = JSON.parse(nextMatch[1]);
+        const items = this._findItems(data);
+        if (items?.length) return this._mapTracks(items);
+      } catch {}
+    }
+
+    // Try base64 session data in <script type="text/json">
     const sessionMatch = html.match(/<script[^>]*type="text\/json"[^>]*>([A-Za-z0-9+/=]+)<\/script>/);
     if (sessionMatch) {
       try {
@@ -58,29 +96,7 @@ class SpotifyScraper {
       } catch {}
     }
 
-    // Try 2: plain JSON in any <script> tag
-    const scriptRegex = /<script[^>]*>([A-Za-z0-9+/=]{100,})<\/script>/g;
-    let match;
-    while ((match = scriptRegex.exec(html)) !== null) {
-      try {
-        const decoded = Buffer.from(match[1], "base64").toString("utf-8").replace(/\0/g, "");
-        const data = JSON.parse(decoded);
-        const items = this._findItems(data);
-        if (items?.length) return this._mapTracks(items);
-      } catch {}
-    }
-
-    // Try 3: __NEXT_DATA__
-    const nextMatch = html.match(/<script id="__NEXT_DATA__"[^>]*type="application\/json"[^>]*>({.+?})<\/script>/s);
-    if (nextMatch) {
-      try {
-        const data = JSON.parse(nextMatch[1]);
-        const items = this._findItems(data);
-        if (items?.length) return this._mapTracks(items);
-      } catch {}
-    }
-
-    throw new Error("Could not extract track data from Spotify page — Spotify may have changed their page structure");
+    return null;
   }
 
   _findItems(obj) {
@@ -94,13 +110,11 @@ class SpotifyScraper {
       return null;
     }
 
-    // direct track list
     if (obj.items && Array.isArray(obj.items)) {
-      if (obj.items[0]?.track?.name || obj.items[0]?.itemV2?.data?.name) return obj.items;
-      if (obj.items[0]?.name) return obj.items;
+      if (obj.items[0]?.track?.name || obj.items[0]?.name || obj.items[0]?.title) return obj.items;
     }
 
-    // nested paths
+    if (obj.trackList && Array.isArray(obj.trackList)) return obj.trackList;
     if (obj.playlistV2?.content?.items) return obj.playlistV2.content.items;
     if (obj.playlist?.tracks?.items) return obj.playlist.tracks.items;
     if (obj.album?.tracks?.items) return obj.album.tracks.items;
@@ -118,7 +132,14 @@ class SpotifyScraper {
     return items.map((item) => {
       let track;
 
-      // itemV2 structure (current Spotify web player)
+      if (item.title && item.subtitle) {
+        return {
+          name: item.title,
+          artists: item.subtitle ? [item.subtitle] : [],
+          query: `${item.subtitle || ""} ${item.title}`.trim(),
+        };
+      }
+
       if (item.itemV2?.data) {
         track = item.itemV2.data;
       } else if (item.track) {

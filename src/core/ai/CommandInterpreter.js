@@ -12,7 +12,7 @@ class CommandInterpreter {
     if (/^(?:queue|q|antrian|lagu apa|lagu sekarang)\b/i.test(lower)) return { type: "queue" };
 
     // Play — needs a query, check last
-    const playPattern = /^(?:play|put on|play me|mainkan|putar|cari)\s+(?:lagu\s+)?(.+)/i;
+    const playPattern = /^(?:play|p|put on|play me|mainkan|putar|cari)\s+(?:lagu\s+)?(.+)/i;
     const playMatch = input.match(playPattern);
     if (playMatch) return { type: "play", query: playMatch[1].trim() };
 

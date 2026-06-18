@@ -12,7 +12,7 @@ module.exports = {
     const tracks = MusicService.getQueue(interaction.guildId);
     if (!tracks?.length) return interaction.reply({ embeds: [ErrorEmbed.build("Queue is empty.")], ephemeral: true });
 
-    await interaction.reply({ embeds: [QueueEmbed.build(tracks)] });
+    await QueueEmbed.send(interaction, tracks, interaction.user.id);
   },
 };
 

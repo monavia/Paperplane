@@ -61,7 +61,10 @@ module.exports = {
         if (!voice) {
           return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         }
-        const { track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+        const { result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+        if (result?.loadType === "playlist") {
+          return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+        }
         return message.channel.send({ embeds: [NowPlayingEmbed.build(track)] });
       }
 
@@ -145,7 +148,7 @@ module.exports = {
       if (interpreted.type === "queue") {
         const tracks = MusicService.getQueue(message.guildId);
         if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
-        return message.channel.send({ embeds: [QueueEmbed.build(tracks)] });
+        return QueueEmbed.send(message.channel, tracks, message.author.id);
       }
 
       if (interpreted.type === "nowplaying") {

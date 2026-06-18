@@ -9,7 +9,7 @@ module.exports = {
     const tracks = MusicService.getQueue(message.guildId);
     if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Queue is empty.")] });
 
-    await message.channel.send({ embeds: [QueueEmbed.build(tracks)] });
+    await QueueEmbed.send(message.channel, tracks, message.author.id);
   },
 };
 

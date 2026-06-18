@@ -19,11 +19,7 @@ async function init(client) {
     },
   });
 
-  const connected = new Promise((resolve) => {
-    lavalink.on("nodeConnected", () => resolve(true));
-  });
-  const timedOut = new Promise((resolve) => setTimeout(() => resolve(false), 10000));
-
+  lavalink.on("nodeConnected", (node) => Logger.info(`Lavalink node ready: ${node.host}`));
   lavalink.on("nodeDisconnected", (node, code, reason) =>
     Logger.warn(`Lavalink node disconnected: ${node.host} (${code}) ${reason || ""}`),
   );
@@ -36,8 +32,28 @@ async function init(client) {
     username: client.user?.username || "bot",
   });
 
-  const ok = await Promise.race([connected, timedOut]);
-  ok ? Logger.ready("Lavalink connected") : Logger.warn("Lavalink is not available — music features disabled");
+  if (lavalink.useable) {
+    Logger.ready("Lavalink connected");
+    return lavalink;
+  }
+
+  await new Promise((resolve) => {
+    const done = () => {
+      lavalink.removeListener("nodeConnected", done);
+      resolve();
+    };
+    lavalink.on("nodeConnected", done);
+    setTimeout(() => {
+      lavalink.removeListener("nodeConnected", done);
+      resolve();
+    }, 15000);
+  });
+
+  if (lavalink.useable) {
+    Logger.ready("Lavalink connected");
+  } else {
+    Logger.warn("Lavalink is not available — music features disabled");
+  }
 
   return lavalink;
 }
@@ -47,8 +63,3 @@ function get() {
 }
 
 module.exports = { init, get };
-
-//======================
-// Created by monavia
-// Don't change if you don't know
-//======================

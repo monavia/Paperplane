@@ -1,6 +1,5 @@
 const { EmbedBuilder } = require("discord.js");
 const Colors = require("../../core/constants/Colors");
-const Emojis = require("../../core/constants/Emojis");
 const { formatTrack } = require("../../core/utils/Formatter");
 
 function build(tracks, page = 1) {
@@ -14,7 +13,7 @@ function build(tracks, page = 1) {
     : "The queue is empty.";
 
   return new EmbedBuilder()
-    .setTitle(`${Emojis.QUEUE} Music Queue`)
+    .setTitle(`Music Queue`)
     .setDescription(desc)
     .setColor(Colors.PRIMARY)
     .setFooter({ text: `Page ${page}/${totalPages} • ${tracks.length} tracks • ${tracks.length * 4} min total` });

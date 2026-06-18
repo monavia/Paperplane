@@ -31,7 +31,7 @@ function queue(tracks, page = 1) {
     : "Queue is empty.";
 
   return new EmbedBuilder()
-    .setTitle(`${Emojis.QUEUE} Queue`)
+    .setTitle(`Queue`)
     .setDescription(desc)
     .setFooter({ text: `Page ${page}/${totalPages} • ${tracks.length} tracks` })
     .setColor(Colors.PRIMARY);

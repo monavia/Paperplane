@@ -3,6 +3,7 @@ class CommandInterpreter {
     const lower = input.toLowerCase().trim();
 
     // Check no-query commands FIRST so they don't get caught by play pattern
+    if (/^(?:help|info|bantuan)\b/i.test(lower)) return { type: "help" };
     if (/^(?:skip|lewati|lompati|lanjut)\b/i.test(lower)) return { type: "skip" };
     if (/^(?:stop|berhenti|matikan|setop)\b/i.test(lower)) return { type: "stop" };
     if (/^(?:pause|jeda|tahan)\b/i.test(lower)) return { type: "pause" };

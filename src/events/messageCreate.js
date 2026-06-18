@@ -147,8 +147,67 @@ module.exports = {
         return message.channel.send({ embeds: [QueueEmbed.build(tracks)] });
       }
 
+      if (interpreted.type === "help") {
+        const { EmbedBuilder } = require("discord.js");
+        const Colors = require("../core/constants/Colors");
+        const prefix = botConfig.prefix;
+        const embed = new EmbedBuilder()
+          .setTitle("Help")
+          .setDescription("Daftar perintah yang tersedia:")
+          .addFields(
+            {
+              name: "🎵 Music",
+              value:
+                `\`${prefix}play <judul/url>\` — Memutar lagu\n` +
+                `\`${prefix}skip\` — Melewati lagu\n` +
+                `\`${prefix}stop\` — Berhenti & disconnect\n` +
+                `\`${prefix}pause\` — Jeda lagu\n` +
+                `\`${prefix}resume\` — Lanjutkan lagu\n` +
+                `\`${prefix}queue\` — Lihat antrian\n` +
+                `\`${prefix}np\` — Lagu yang sedang diputar\n` +
+                `\`${prefix}volume <1-100>\` — Atur volume\n` +
+                `\`${prefix}shuffle\` — Acak antrian\n` +
+                `\`${prefix}loop\` — Ulang lagu/antrian\n` +
+                `\`${prefix}seek <detik>\` — Loncat ke posisi\n` +
+                `\`${prefix}autoplay\` — Putar lagu serupa`,
+            },
+            {
+              name: "🤖 AI",
+              value:
+                `\`${prefix}recommend\` — Rekomendasi lagu`,
+            },
+            {
+              name: "⚙️ System",
+              value:
+                "`" + `${prefix}` + "ping` — Cek respon bot\n" +
+                "`" + `${prefix}` + "help` — Bantuan ini\n" +
+                "`" + `${prefix}` + "info` — Info bot\n" +
+                "`" + `${prefix}` + "stats` — Statistik bot\n" +
+                "`" + `${prefix}` + "tiktok channel #channel` — Set channel notifikasi\n" +
+                "`" + `${prefix}` + "tiktok add <user>` — Pantau TikTok\n" +
+                "`" + `${prefix}` + "tiktok remove <user>` — Hentikan pantauan\n" +
+                "`" + `${prefix}` + "tiktok list` — Lihat daftar pantauan\n" +
+                "`" + `${prefix}` + "prefix` — Ganti prefix",
+            },
+            {
+              name: "💬 AI Chat (Natural Language)",
+              value:
+                "Ketik `" + `${trigger}` + " <pesan>` untuk ngobrol dengan AI.\n" +
+                `Contoh: \`${trigger} apa kabar?\`\n\n` +
+                "Kamu juga bisa kontrol musik pakai bahasa alami:\n" +
+                `\`${trigger} mainkan lagu nina\`\n` +
+                `\`${trigger} buatkan playlist untuk game santai\`\n` +
+                `\`${trigger} skip\`\n` +
+                `\`${trigger} stop\``,
+            },
+          )
+          .setColor(Colors.PRIMARY);
+        return message.channel.send({ embeds: [embed] });
+      }
+
       // Chat response
-      const reply = await AIEngine.ask(message.author.id, input, "You are a helpful Discord assistant. Answer concisely.");
+      const today = new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+      const reply = await AIEngine.ask(message.author.id, input, `Today is ${today}. You are a helpful Discord assistant. Answer concisely.`);
       if (reply) message.channel.send(reply);
     } catch (err) {
       Logger.error("AI command error:", err.message);

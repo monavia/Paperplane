@@ -10,6 +10,7 @@ class CommandInterpreter {
     if (/^(?:pause|jeda|tahan)\b/i.test(lower)) return { type: "pause" };
     if (/^(?:resume|unpause|lanjutkan|mainkan lagi)\b/i.test(lower)) return { type: "resume" };
     if (/^(?:queue|q|antrian|lagu apa|lagu sekarang)\b/i.test(lower)) return { type: "queue" };
+    if (/^(?:set\s+)?prefix\b/i.test(lower)) return { type: "prefix" };
 
     // Play — needs a query, check last
     const playPattern = /^(?:play|p|put on|play me|mainkan|putar|cari)\s+(?:lagu\s+)?(.+)/i;

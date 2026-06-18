@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const guildSchema = new mongoose.Schema({
   guildId: { type: String, required: true, unique: true },
-  prefix: { type: String, default: "!" },
+  prefix: { type: String, default: "-" },
   volume: { type: Number, default: 80 },
   djRole: { type: String, default: null },
   announceTracks: { type: Boolean, default: true },

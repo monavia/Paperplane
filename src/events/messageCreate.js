@@ -1,5 +1,6 @@
-const { Events } = require("discord.js");
+const { Events, PermissionFlagsBits } = require("discord.js");
 const botConfig = require("../config/bot");
+const GuildRepository = require("../database/repositories/GuildRepository");
 const AIEngine = require("../core/ai/AIEngine");
 const AIDJ = require("../core/ai/AIDJ");
 const MusicService = require("../services/MusicService");
@@ -18,7 +19,8 @@ module.exports = {
     if (message.author.bot || !message.guild) return;
 
     const content = message.content.trim();
-    const prefix = botConfig.prefix;
+    const guild = await GuildRepository.findByGuildId(message.guildId);
+    const prefix = guild.prefix || botConfig.prefix;
 
     // Prefix commands
     if (content.startsWith(prefix)) {
@@ -149,6 +151,26 @@ module.exports = {
         return QueueEmbed.send(message.channel, tracks, message.author.id);
       }
 
+      if (interpreted.type === "prefix") {
+        const GuildRepository = require("../database/repositories/GuildRepository");
+        const guild = await GuildRepository.findByGuildId(message.guildId);
+        const current = guild.prefix || botConfig.prefix;
+        const isSet = /^set\s+/i.test(input);
+        if (isSet) {
+          if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {
+            return message.channel.send({ embeds: [ErrorEmbed.build("Kamu tidak dapat menggunakan command ini, hanya dengan role Administrator/Owner server yang bisa memakai command ini.")] });
+          }
+          const setMatch = input.match(/^set\s+prefix\s+(\S+)/i);
+          if (!setMatch) {
+            return message.channel.send({ embeds: [ErrorEmbed.build("Gunakan: set prefix <prefix baru>")] });
+          }
+          const newPrefix = setMatch[1];
+          await GuildRepository.updatePrefix(message.guildId, newPrefix);
+          return message.channel.send({ embeds: [SuccessEmbed.build(`Prefix diganti menjadi \`${newPrefix}\``)] });
+        }
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Prefix server ini: \`${current}\``)] });
+      }
+
       if (interpreted.type === "nowplaying") {
         const player = getPlayer(message.guildId);
         const track = player?.queue?.current;
@@ -159,7 +181,6 @@ module.exports = {
       if (interpreted.type === "help") {
         const { EmbedBuilder } = require("discord.js");
         const Colors = require("../core/constants/Colors");
-        const prefix = botConfig.prefix;
         const embed = new EmbedBuilder()
           .setTitle("Help")
           .setDescription("Daftar perintah yang tersedia:")

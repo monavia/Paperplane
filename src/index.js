@@ -7,6 +7,7 @@ const { load: loadEvents } = require("./core/bootstrap/loadEvents");
 const { load: loadLavalink } = require("./core/bootstrap/loadLavalink");
 const { load: loadDatabase } = require("./core/bootstrap/loadDatabase");
 const { deploy } = require("./core/bootstrap/deployCommands");
+const { load: loadTikTok } = require("./core/bootstrap/loadTikTok");
 
 const client = new Client({
   intents: [
@@ -38,6 +39,9 @@ client.once("clientReady", async () => {
     Logger.warn("Ollama server unreachable — AI features disabled");
   }
 
+  if (dbAvailable) loadTikTok(client);
+  else Logger.warn("Database required for TikTok notifications — skipping");
+
   const commandsData = getSlashData(client);
   await deploy(commandsData);
 
@@ -51,6 +55,9 @@ client.once("clientReady", async () => {
 
 async function shutdown() {
   Logger.warn("Shutting down...");
+
+  const { stop: stopTikTok } = require("./services/TikTokService");
+  stopTikTok();
 
   const { get: getLavalink } = require("./core/music/lavalink");
   const lavalink = getLavalink();

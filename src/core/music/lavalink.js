@@ -19,7 +19,11 @@ async function init(client) {
     },
   });
 
-  lavalink.on("nodeConnected", (node) => Logger.info(`Lavalink node connected: ${node.host}`));
+  const connected = new Promise((resolve) => {
+    lavalink.on("nodeConnected", () => resolve(true));
+  });
+  const timedOut = new Promise((resolve) => setTimeout(() => resolve(false), 10000));
+
   lavalink.on("nodeDisconnected", (node, code, reason) =>
     Logger.warn(`Lavalink node disconnected: ${node.host} (${code}) ${reason || ""}`),
   );
@@ -32,7 +36,9 @@ async function init(client) {
     username: client.user?.username || "bot",
   });
 
-  Logger.ready("Lavalink initialized");
+  const ok = await Promise.race([connected, timedOut]);
+  ok ? Logger.ready("Lavalink connected") : Logger.warn("Lavalink is not available — music features disabled");
+
   return lavalink;
 }
 

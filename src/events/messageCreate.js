@@ -6,7 +6,6 @@ const MusicService = require("../services/MusicService");
 const { getPlayer } = require("../core/music/PlayerManager");
 const ErrorEmbed = require("../ui/embeds/ErrorEmbed");
 const SuccessEmbed = require("../ui/embeds/SuccessEmbed");
-const NowPlayingEmbed = require("../ui/embeds/NowPlayingEmbed");
 const QueueEmbed = require("../ui/embeds/QueueEmbed");
 const Logger = require("../core/utils/Logger");
 
@@ -61,11 +60,10 @@ module.exports = {
         if (!voice) {
           return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         }
-        const { result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+        const { result } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
         if (result?.loadType === "playlist") {
           return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
         }
-        return message.channel.send({ embeds: [NowPlayingEmbed.build(track)] });
       }
 
       if (interpreted.type === "playlist" && interpreted.songs?.length) {
@@ -104,7 +102,7 @@ module.exports = {
         }
 
         MusicService.saveState(message.guildId).catch(() => {});
-        return message.channel.send({ embeds: [SuccessEmbed.build(`Memutar ${found.length} lagu dari playlist: ${found[0].info.title}`)] });
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${found.length} lagu ke antrian.`)] });
       }
 
       if (interpreted.type === "skip") {
@@ -113,7 +111,7 @@ module.exports = {
         const player = MusicService.getEngine(message.guildId).player;
         if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
         await MusicService.skip(message.guildId);
-        return message.channel.send({ embeds: [SuccessEmbed.build("Lagu dilewati.")] });
+        return;
       }
 
       if (interpreted.type === "stop") {

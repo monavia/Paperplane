@@ -1,6 +1,10 @@
 const lavalink = require("./lavalink");
 const state = require("../state/StateManager");
 const Logger = require("../utils/Logger");
+const { EmbedBuilder } = require("discord.js");
+const Colors = require("../constants/Colors");
+
+const disconnectTimers = new Map();
 
 function register(client) {
   const l = lavalink.get();
@@ -9,6 +13,24 @@ function register(client) {
   l.on("trackStart", (player, track) => {
     state.nowPlaying.set(player.guildId, track);
     Logger.debug(`Track started in ${player.guildId}: ${track.info.title}`);
+
+    // Cancel pending disconnect timer
+    const timer = disconnectTimers.get(player.guildId);
+    if (timer) {
+      clearTimeout(timer);
+      disconnectTimers.delete(player.guildId);
+    }
+
+    // Send Now Playing embed
+    if (player.textChannelId) {
+      const channel = client.channels.cache.get(player.textChannelId);
+      if (channel) {
+        const embed = new EmbedBuilder()
+          .setDescription(`Now Playing [${track.info.title || "Unknown"}](${track.info.uri || ""})`)
+          .setColor(Colors.NOWPLAYING);
+        channel.send({ embeds: [embed] }).catch(() => {});
+      }
+    }
   });
 
   l.on("trackEnd", (player, track, reason) => {
@@ -26,7 +48,28 @@ function register(client) {
       player.play({ track: next, clientTrack: next }).catch(err => {
         Logger.error(`Failed to play next: ${next.info.title} — ${err.message}`);
       });
+      return;
     }
+
+    // Queue is empty — start 3-minute disconnect timer
+    if (player.textChannelId) {
+      const channel = client.channels.cache.get(player.textChannelId);
+      if (channel) {
+        const embed = new EmbedBuilder()
+          .setDescription("Antrian selesai. Bot akan disconnect otomatis 3 menit lagi.")
+          .setColor(Colors.WARNING);
+        channel.send({ embeds: [embed] }).catch(() => {});
+      }
+    }
+
+    const timerId = setTimeout(() => {
+      player.disconnect();
+      player.destroy();
+      state.queues.clear(player.guildId);
+      disconnectTimers.delete(player.guildId);
+    }, 180000);
+
+    disconnectTimers.set(player.guildId, timerId);
   });
 
   l.on("trackError", (player, track, error) => {
@@ -36,6 +79,11 @@ function register(client) {
   l.on("playerDisconnect", (player) => {
     state.nowPlaying.delete(player.guildId);
     state.queues.clear(player.guildId);
+    const timer = disconnectTimers.get(player.guildId);
+    if (timer) {
+      clearTimeout(timer);
+      disconnectTimers.delete(player.guildId);
+    }
   });
 }
 

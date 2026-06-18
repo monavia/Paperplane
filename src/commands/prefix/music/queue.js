@@ -4,6 +4,7 @@ const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
 
 module.exports = {
   name: "queue",
+  aliases: ["q"],
   async execute(message, args) {
     const tracks = MusicService.getQueue(message.guildId);
     if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Queue is empty.")] });

@@ -8,7 +8,7 @@ class CommandInterpreter {
     if (/^(?:stop|berhenti|matikan|setop)\b/i.test(lower)) return { type: "stop" };
     if (/^(?:pause|jeda|tahan)\b/i.test(lower)) return { type: "pause" };
     if (/^(?:resume|unpause|lanjutkan|mainkan lagi)\b/i.test(lower)) return { type: "resume" };
-    if (/^(?:queue|antrian|lagu apa|lagu sekarang)\b/i.test(lower)) return { type: "queue" };
+    if (/^(?:queue|q|antrian|lagu apa|lagu sekarang)\b/i.test(lower)) return { type: "queue" };
 
     // Play — needs a query, check last
     const playPattern = /^(?:play|put on|play me|mainkan|putar|cari)\s+(?:lagu\s+)?(.+)/i;

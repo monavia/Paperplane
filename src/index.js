@@ -65,7 +65,7 @@ client.once("clientReady", async () => {
 
   client.user.setPresence({
     activities: [{ name: "-help | Seryn", type: 2 }],
-    status: "online",
+      status: "online",
   });
 });
 

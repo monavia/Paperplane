@@ -9,7 +9,7 @@ const NowPlayingEmbed = require("../ui/embeds/NowPlayingEmbed");
 const QueueEmbed = require("../ui/embeds/QueueEmbed");
 const Logger = require("../core/utils/Logger");
 
-const trigger = "seryn";
+const trigger = botConfig.trigger;
 const aidj = new AIDJ();
 
 module.exports = {
@@ -38,12 +38,19 @@ module.exports = {
       return;
     }
 
-    // Natural language commands (trigger word)
-    const triggerIndex = content.toLowerCase().indexOf(trigger);
-    if (triggerIndex !== 0) return;
+    // Natural language commands (trigger word or bot mention)
+    const botMentioned = message.mentions.has(message.client.user);
+    const triggerAtStart = content.toLowerCase().indexOf(trigger) === 0;
 
-    const input = content.slice(trigger.length).replace(/^[,:\s]+/, "").trim();
-    if (!input) return;
+    if (!triggerAtStart && !botMentioned) return;
+
+    let input;
+    if (triggerAtStart) {
+      input = content.slice(trigger.length).replace(/^[,:\s]+/, "").trim();
+    } else {
+      input = content.replace(/<@!?\d+>/g, "").trim();
+      if (!input) return;
+    }
 
     try {
       const interpreted = await aidj.interpret(input);

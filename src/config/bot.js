@@ -5,6 +5,7 @@ module.exports = {
   clientId: process.env.CLIENT_ID,
   guildId: process.env.GUILD_ID,
   prefix: process.env.PREFIX || "!",
+  trigger: process.env.TRIGGER || "seryn",
   owners: (process.env.OWNERS || "").split(",").map((s) => s.trim()).filter(Boolean),
 };
 

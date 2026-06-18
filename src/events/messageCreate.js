@@ -8,6 +8,7 @@ const { getPlayer } = require("../core/music/PlayerManager");
 const ErrorEmbed = require("../ui/embeds/ErrorEmbed");
 const SuccessEmbed = require("../ui/embeds/SuccessEmbed");
 const QueueEmbed = require("../ui/embeds/QueueEmbed");
+const NowPlayingEmbed = require("../ui/embeds/NowPlayingEmbed");
 const Logger = require("../core/utils/Logger");
 
 const trigger = botConfig.trigger;

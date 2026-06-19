@@ -144,19 +144,12 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
     const maxTracks = 100;
     const tracksToSearch = scraped.slice(0, maxTracks);
-    const allTracks = [];
 
-    for (const item of tracksToSearch) {
-      try {
-        const result = await player.search({ query: `ytsearch:${item.query}` }, user);
-        if (result?.tracks?.length) allTracks.push(result.tracks[0]);
-      } catch {}
-      await new Promise((r) => setTimeout(r, 350));
-    }
+    // Play first track immediately
+    const firstResult = await player.search({ query: `ytsearch:${tracksToSearch[0].query}` }, user);
+    if (!firstResult?.tracks?.length) throw new Error("Tidak bisa memutar lagu pertama dari Spotify.");
 
-    if (!allTracks.length) throw new Error("Tidak ada lagu dari Spotify yang bisa diputar.");
-
-    const isPlaylist = allTracks.length > 1;
+    const allTracks = [firstResult.tracks[0]];
 
     if (player.playing || player.paused) {
       engine.queue.addMultiple(allTracks);
@@ -164,19 +157,42 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
       engine.queue.clear();
       engine.queue.addMultiple(allTracks);
       const first = engine.queue.next();
-      if (!first) throw new Error("No tracks to play");
-      try {
-        await player.play({ track: first, clientTrack: first });
-      } catch (err) {
-        Logger.error("Playback failed:", err.message);
-        throw new Error(`Failed to play: ${err.message}`);
+      if (first) {
+        try {
+          await player.play({ track: first, clientTrack: first });
+        } catch (err) {
+          Logger.error("Playback failed:", err.message);
+          throw new Error(`Failed to play: ${err.message}`);
+        }
       }
     }
 
     await saveState(guildId);
+
+    // Return immediately; resolve remaining tracks in background
+    const remaining = tracksToSearch.slice(1);
+    if (remaining.length) {
+      const p = player;
+      process.nextTick(async () => {
+        let count = 1;
+        for (const item of remaining) {
+          try {
+            const r = await p.search({ query: `ytsearch:${item.query}` }, user);
+            if (r?.tracks?.length) {
+              engine.queue.add(r.tracks[0]);
+              count++;
+            }
+          } catch {}
+          await new Promise((r) => setTimeout(r, 350));
+        }
+        Logger.info(`Resolved ${count}/${tracksToSearch.length} Spotify tracks for ${guildId}`);
+        await saveState(guildId);
+      });
+    }
+
     return {
       engine, player,
-      result: { tracks: allTracks, loadType: isPlaylist ? "playlist" : "track" },
+      result: { tracks: allTracks, loadType: "track" },
       track: allTracks[0],
     };
   }

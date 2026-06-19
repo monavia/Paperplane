@@ -91,7 +91,7 @@ class SpotifyScraper {
 
   _extractFromHtml(html) {
     // Try __NEXT_DATA__ first
-    const nextMatch = html.match(/<script id="__NEXT_DATA__"[^>]*type="application\/json"[^>]*>({.+?})<\/script>/s);
+    const nextMatch = html.match(/<script id="__NEXT_DATA__"[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/);
     if (nextMatch) {
       try {
         const data = JSON.parse(nextMatch[1]);

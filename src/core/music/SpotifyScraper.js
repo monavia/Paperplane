@@ -28,7 +28,7 @@ class SpotifyScraper {
     // Try main page first — usually has full track list
     const html = await this._fetchPage(`https://open.spotify.com/playlist/${id}`);
     const tracks = this._extractFromHtml(html);
-    if (tracks?.length >= 10) return tracks;
+    if (tracks?.length >= 10) return this._deduplicate(tracks);
 
     // Fall back to embed page with pagination
     const allTracks = [];
@@ -45,7 +45,7 @@ class SpotifyScraper {
       if (mapped.length < 50) break;
       offset += 50;
     }
-    if (allTracks.length) return allTracks;
+    if (allTracks.length) return this._deduplicate(allTracks);
 
     throw new Error("Could not extract playlist data from Spotify");
   }
@@ -84,9 +84,15 @@ class SpotifyScraper {
   }
 
   async _fetchPage(url) {
-    const res = await fetch(url, { headers: this.headers });
-    if (!res.ok) throw new Error(`Spotify returned HTTP ${res.status}`);
-    return res.text();
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 20000);
+    try {
+      const res = await fetch(url, { headers: this.headers, signal: controller.signal });
+      if (!res.ok) throw new Error(`Spotify returned HTTP ${res.status}`);
+      return await res.text();
+    } finally {
+      clearTimeout(timer);
+    }
   }
 
   _extractFromHtml(html) {
@@ -146,6 +152,16 @@ class SpotifyScraper {
       this._findAllItems(obj[key], results);
     }
     return results;
+  }
+
+  _deduplicate(tracks) {
+    const seen = new Set();
+    return tracks.filter((t) => {
+      const key = t.query.toLowerCase().replace(/\s+/g, " ");
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
   _mapTracks(items) {

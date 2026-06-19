@@ -16,6 +16,13 @@ async function createPlayer(guildId, voiceChannelId, textChannelId) {
   });
   if (player && voiceChannelId) {
     await player.connect();
+    lavalink.cachePlayer(guildId, {
+      voiceChannelId,
+      textChannelId,
+      currentTrack: null,
+      position: 0,
+      volume: musicConfig.defaultVolume,
+    });
   }
   return player;
 }
@@ -24,6 +31,7 @@ function destroyPlayer(guildId) {
   const player = getPlayer(guildId);
   if (player) {
     player.destroy();
+    lavalink.uncachePlayer(guildId);
     return true;
   }
   return false;

@@ -21,6 +21,15 @@ function register(client) {
       disconnectTimers.delete(player.guildId);
     }
 
+    // Cache player state for failover
+    lavalink.cachePlayer(player.guildId, {
+      voiceChannelId: player.voiceChannelId,
+      textChannelId: player.textChannelId,
+      currentTrack: track,
+      position: 0,
+      volume: player.volume,
+    });
+
     // Send Now Playing embed
     if (player.textChannelId) {
       const channel = client.channels.cache.get(player.textChannelId);
@@ -35,6 +44,13 @@ function register(client) {
 
   l.on("trackEnd", (player, track, reason) => {
     state.nowPlaying.delete(player.guildId);
+    lavalink.cachePlayer(player.guildId, {
+      voiceChannelId: player.voiceChannelId,
+      textChannelId: player.textChannelId,
+      currentTrack: null,
+      position: 0,
+      volume: player.volume,
+    });
   });
 
   l.on("queueEnd", (player, track, payload) => {
@@ -65,6 +81,7 @@ function register(client) {
     const timerId = setTimeout(() => {
       player.disconnect();
       player.destroy();
+      lavalink.uncachePlayer(player.guildId);
       state.queues.clear(player.guildId);
       disconnectTimers.delete(player.guildId);
     }, 180000);
@@ -79,6 +96,7 @@ function register(client) {
   l.on("playerDisconnect", (player) => {
     state.nowPlaying.delete(player.guildId);
     state.queues.clear(player.guildId);
+    lavalink.uncachePlayer(player.guildId);
     const timer = disconnectTimers.get(player.guildId);
     if (timer) {
       clearTimeout(timer);

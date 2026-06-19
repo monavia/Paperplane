@@ -1,5 +1,6 @@
 const QueueEngine = require("./QueueEngine");
 const PlaybackEngine = require("./PlaybackEngine");
+const lavalink = require("./lavalink");
 const { getPlayer, createPlayer } = require("./PlayerManager");
 
 class MusicEngine {
@@ -24,6 +25,7 @@ class MusicEngine {
       await player.stopPlaying();
       player.disconnect();
       player.destroy();
+      lavalink.uncachePlayer(this.guildId);
     }
   }
 

@@ -64,10 +64,13 @@ module.exports = {
         if (!voice) {
           return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         }
+        const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
         const { result } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+        await msg.delete().catch(() => {});
         if (result?.loadType === "playlist") {
           return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
         }
+        return;
       }
 
       if (interpreted.type === "playlist" && interpreted.songs?.length) {

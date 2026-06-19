@@ -16,7 +16,7 @@ function nodeLabel(node) {
   const op = node.options;
   const idx = lavalinkConfig.nodes.findIndex((n) => n.name === op.name);
   const num = idx >= 0 ? idx + 1 : "?";
-  return `Node ${num} (${op.name}) [${op.host}:${op.port}]`;
+  return `Node ${num} [${op.host}:${op.port}]`;
 }
 
 function startNodeReconnectLoop(nodeName) {
@@ -124,8 +124,9 @@ async function init(client) {
   const connected = connectedNodes.size;
   const failed = lavalinkConfig.nodes.filter((n) => !connectedNodes.has(n.name));
 
-  failed.forEach((cfg) => {
-    Logger.warn(`Lavalink ${cfg.name} [${cfg.host}:${cfg.port}] not connected`);
+  failed.forEach((cfg, i) => {
+    const num = lavalinkConfig.nodes.findIndex((n) => n.name === cfg.name) + 1;
+    Logger.warn(`Lavalink Node ${num} [${cfg.host}:${cfg.port}] not connected`);
   });
 
   if (connected > 0) {

@@ -65,12 +65,22 @@ module.exports = {
           return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         }
         const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
-        const { result } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
-        await msg.delete().catch(() => {});
-        if (result?.loadType === "playlist") {
-          return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+        try {
+          const wasPlaying = MusicService.getEngine(message.guildId)?.player?.playing || false;
+          const { result } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+          await msg.delete().catch(() => {});
+          if (result?.loadType === "playlist") {
+            return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+          }
+          if (wasPlaying || result?.tracks?.length > 1) {
+            return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan lagu ke antrian.`)] });
+          }
+          return;
+        } catch (err) {
+          await msg.delete().catch(() => {});
+          Logger.error("AI play error:", err.message);
+          return message.channel.send({ embeds: [ErrorEmbed.build(`Gagal memutar: ${err.message}`)] }).catch(() => {});
         }
-        return;
       }
 
       if (interpreted.type === "playlist" && interpreted.songs?.length) {

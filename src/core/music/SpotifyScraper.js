@@ -95,8 +95,11 @@ class SpotifyScraper {
     if (nextMatch) {
       try {
         const data = JSON.parse(nextMatch[1]);
-        const items = this._findItems(data);
-        if (items?.length) return this._mapTracks(items);
+        const candidates = this._findAllItems(data);
+        if (candidates.length) {
+          const best = candidates.reduce((a, b) => a.length >= b.length ? a : b);
+          if (best?.length) return this._mapTracks(best);
+        }
       } catch {}
     }
 
@@ -106,42 +109,43 @@ class SpotifyScraper {
       try {
         const decoded = Buffer.from(sessionMatch[1], "base64").toString("utf-8");
         const data = JSON.parse(decoded);
-        const items = this._findItems(data);
-        if (items?.length) return this._mapTracks(items);
+        const candidates = this._findAllItems(data);
+        if (candidates.length) {
+          const best = candidates.reduce((a, b) => a.length >= b.length ? a : b);
+          if (best?.length) return this._mapTracks(best);
+        }
       } catch {}
     }
 
     return null;
   }
 
-  _findItems(obj) {
-    if (!obj || typeof obj !== "object") return null;
+  _findAllItems(obj, results = []) {
+    if (!obj || typeof obj !== "object") return results;
 
     if (Array.isArray(obj)) {
       for (const item of obj) {
-        const found = this._findItems(item);
-        if (found) return found;
+        this._findAllItems(item, results);
       }
-      return null;
+      return results;
     }
 
     if (obj.items && Array.isArray(obj.items)) {
-      if (obj.items[0]?.track?.name || obj.items[0]?.name || obj.items[0]?.title) return obj.items;
+      if (obj.items[0]?.track?.name || obj.items[0]?.name || obj.items[0]?.title) results.push(obj.items);
     }
 
-    if (obj.trackList && Array.isArray(obj.trackList)) return obj.trackList;
-    if (obj.playlistV2?.content?.items) return obj.playlistV2.content.items;
-    if (obj.data?.playlistV2?.content?.items) return obj.data.playlistV2.content.items;
-    if (obj.playlist?.tracks?.items) return obj.playlist.tracks.items;
-    if (obj.album?.tracks?.items) return obj.album.tracks.items;
-    if (obj.tracks?.items) return obj.tracks.items;
-    if (obj.tracks && Array.isArray(obj.tracks)) return obj.tracks;
+    if (obj.trackList && Array.isArray(obj.trackList)) results.push(obj.trackList);
+    if (obj.playlistV2?.content?.items) results.push(obj.playlistV2.content.items);
+    if (obj.data?.playlistV2?.content?.items) results.push(obj.data.playlistV2.content.items);
+    if (obj.playlist?.tracks?.items) results.push(obj.playlist.tracks.items);
+    if (obj.album?.tracks?.items) results.push(obj.album.tracks.items);
+    if (obj.tracks?.items) results.push(obj.tracks.items);
+    if (obj.tracks && Array.isArray(obj.tracks)) results.push(obj.tracks);
 
     for (const key of Object.keys(obj)) {
-      const found = this._findItems(obj[key]);
-      if (found) return found;
+      this._findAllItems(obj[key], results);
     }
-    return null;
+    return results;
   }
 
   _mapTracks(items) {

@@ -142,7 +142,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     const scraped = await spotifyScraper.scrape(query);
     if (!scraped?.length) throw new Error("Tidak bisa mengambil data dari Spotify.");
 
-    const maxTracks = 30;
+    const maxTracks = 100;
     const tracksToSearch = scraped.slice(0, maxTracks);
     const allTracks = [];
 

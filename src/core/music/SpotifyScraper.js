@@ -25,15 +25,29 @@ class SpotifyScraper {
   }
 
   async scrapePlaylist(id) {
-    const data = await this._fetchEntity("playlist", id);
-    if (!data?.entity?.trackList) {
-      throw new Error("Could not extract playlist data from Spotify");
+    // Try main page first — usually has full track list
+    const html = await this._fetchPage(`https://open.spotify.com/playlist/${id}`);
+    const tracks = this._extractFromHtml(html);
+    if (tracks?.length >= 10) return tracks;
+
+    // Fall back to embed page with pagination
+    const allTracks = [];
+    let offset = 0;
+    while (allTracks.length < 500) {
+      const data = await this._fetchEntity("playlist", id, offset);
+      if (!data?.entity?.trackList?.length) break;
+      const mapped = data.entity.trackList.map((t) => ({
+        name: t.title,
+        artists: t.subtitle ? [t.subtitle] : [],
+        query: `${t.subtitle || ""} ${t.title}`.trim(),
+      }));
+      allTracks.push(...mapped);
+      if (mapped.length < 50) break;
+      offset += 50;
     }
-    return data.entity.trackList.map((t) => ({
-      name: t.title,
-      artists: t.subtitle ? [t.subtitle] : [],
-      query: `${t.subtitle || ""} ${t.title}`.trim(),
-    }));
+    if (allTracks.length) return allTracks;
+
+    throw new Error("Could not extract playlist data from Spotify");
   }
 
   async scrapeTrack(id) {
@@ -60,8 +74,9 @@ class SpotifyScraper {
     throw new Error("Could not extract track data from Spotify album — albums are not supported without API access");
   }
 
-  async _fetchEntity(type, id) {
-    const html = await this._fetchPage(`https://open.spotify.com/embed/${type}/${id}`);
+  async _fetchEntity(type, id, offset = 0) {
+    const url = `https://open.spotify.com/embed/${type}/${id}${offset ? `?offset=${offset}` : ""}`;
+    const html = await this._fetchPage(url);
     const match = html.match(/<script id="__NEXT_DATA__" type="application\/json">(.+?)<\/script>/s);
     if (!match) return null;
     const json = JSON.parse(match[1]);
@@ -116,6 +131,7 @@ class SpotifyScraper {
 
     if (obj.trackList && Array.isArray(obj.trackList)) return obj.trackList;
     if (obj.playlistV2?.content?.items) return obj.playlistV2.content.items;
+    if (obj.data?.playlistV2?.content?.items) return obj.data.playlistV2.content.items;
     if (obj.playlist?.tracks?.items) return obj.playlist.tracks.items;
     if (obj.album?.tracks?.items) return obj.album.tracks.items;
     if (obj.tracks?.items) return obj.tracks.items;

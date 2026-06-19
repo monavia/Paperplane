@@ -167,7 +167,9 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
     const allTracks = [firstResult.tracks[0]];
 
-    if (player.playing || player.paused) {
+    const wasPlaying = player.playing || player.paused;
+
+    if (wasPlaying) {
       engine.queue.addMultiple(allTracks);
     } else {
       engine.queue.clear();
@@ -213,6 +215,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
       engine, player,
       result: { tracks: allTracks, loadType: "track", spotifyTotal: tracksToSearch.length },
       track: allTracks[0],
+      wasPlaying,
     };
   }
 
@@ -226,7 +229,9 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
   const isPlaylist = result.loadType === "playlist";
   const tracks = (isPlaylist || multi) ? result.tracks.slice(0, 20) : [result.tracks[0]];
 
-  if (player.playing || player.paused) {
+  const wasPlaying = player.playing || player.paused;
+
+  if (wasPlaying) {
     engine.queue.addMultiple(tracks);
   } else {
     engine.queue.clear();
@@ -242,7 +247,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
   }
 
   await saveState(guildId);
-  return { engine, player, result, track: tracks[0] };
+  return { engine, player, result, track: tracks[0], wasPlaying };
 }
 
 async function skip(guildId) {

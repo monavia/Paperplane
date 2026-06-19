@@ -15,11 +15,10 @@ module.exports = {
     const voice = message.member.voice.channel;
     if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
 
-    const wasPlaying = MusicService.getEngine(message.guildId)?.player?.playing || false;
     const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
 
     try {
-      const { engine, result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, query, message.author);
+      const { engine, result, track, wasPlaying } = await MusicService.play(message.guildId, voice.id, message.channelId, query, message.author);
 
       await msg.delete().catch(() => {});
 

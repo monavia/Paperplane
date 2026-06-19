@@ -73,7 +73,10 @@ module.exports = {
             return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
           }
           if (wasPlaying || result?.tracks?.length > 1) {
-            return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${track?.info?.title || track?.title || track?.name || "lagu"}`)] });
+            const title = track?.info?.title || track?.title || track?.name || "lagu";
+            const url = track?.info?.uri;
+            const label = url ? `[${title}](${url})` : title;
+            return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${label}`)] });
           }
           return;
         } catch (err) {

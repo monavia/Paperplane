@@ -235,7 +235,7 @@ function get() {
   return lavalink;
 }
 
-module.exports = { init, get, cachePlayer, uncachePlayer, startPositionTracking, stopPositionTracking };
+module.exports = { init, get, cachePlayer, uncachePlayer, startPositionTracking, stopPositionTracking, getNextAvailableNode };
 
 //======================
 // Created by monavia

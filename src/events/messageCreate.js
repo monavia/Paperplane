@@ -67,13 +67,13 @@ module.exports = {
         const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
         try {
           const wasPlaying = MusicService.getEngine(message.guildId)?.player?.playing || false;
-          const { result } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
+          const { result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
           await msg.delete().catch(() => {});
           if (result?.loadType === "playlist") {
             return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
           }
           if (wasPlaying || result?.tracks?.length > 1) {
-            return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan lagu ke antrian.`)] });
+            return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${track?.info?.title || track?.title || track?.name || "lagu"}`)] });
           }
           return;
         } catch (err) {

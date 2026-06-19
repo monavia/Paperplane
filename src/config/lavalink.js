@@ -1,32 +1,31 @@
 require("dotenv/config");
 
-const nodes = [
-  {
-    name: "main",
-    host: process.env.LAVALINK_HOST || "localhost",
-    port: Number(process.env.LAVALINK_PORT) || 2333,
-    authorization: process.env.LAVALINK_PASSWORD || "youshallnotpass",
-    secure: process.env.LAVALINK_SECURE === "true",
-    resumeKey: process.env.LAVALINK_RESUME_KEY || "paperplane",
-    resumeTimeout: 120,
-    retryAmount: 10,
-    retryDelay: 5000,
-  },
-];
+const NODE_NAMES = ["main", "backup", "node3", "node4"];
+const DEFAULT_PORTS = [2333, 2334, 2335, 2336];
 
-if (process.env.LAVALINK_HOST_2) {
-  nodes.push({
-    name: "backup",
-    host: process.env.LAVALINK_HOST_2,
-    port: Number(process.env.LAVALINK_PORT_2) || 2334,
-    authorization: process.env.LAVALINK_PASSWORD_2 || "youshallnotpass",
-    secure: process.env.LAVALINK_SECURE_2 === "true",
+function readNodeEnv(i) {
+  const sfx = i === 0 ? "" : `_${i + 1}`;
+  return {
+    host: process.env[`LAVALINK_HOST${sfx}`],
+    port: Number(process.env[`LAVALINK_PORT${sfx}`]) || DEFAULT_PORTS[i],
+    password: process.env[`LAVALINK_PASSWORD${sfx}`] || "youshallnotpass",
+    secure: process.env[`LAVALINK_SECURE${sfx}`] === "true",
+  };
+}
+
+const nodes = NODE_NAMES.map((name, i) => ({ name, ...readNodeEnv(i) }))
+  .filter((n) => n.host)
+  .map((n) => ({
+    name: n.name,
+    host: n.host,
+    port: n.port,
+    authorization: n.password,
+    secure: n.secure,
     resumeKey: process.env.LAVALINK_RESUME_KEY || "paperplane",
     resumeTimeout: 120,
     retryAmount: 10,
     retryDelay: 5000,
-  });
-}
+  }));
 
 module.exports = { nodes };
 

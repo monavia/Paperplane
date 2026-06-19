@@ -27,9 +27,11 @@ function register(client) {
       voiceChannelId: player.voiceChannelId,
       textChannelId: player.textChannelId,
       currentTrack: track,
-      position: 0,
+      position: player.position || 0,
       volume: player.volume,
     });
+
+    lavalink.startPositionTracking(player.guildId);
 
     // Send Now Playing embed
     if (player.textChannelId) {
@@ -47,11 +49,12 @@ function register(client) {
     Logger.info(`[trackEnd] guild=${player.guildId} reason=${typeof reason === 'object' ? reason?.reason : reason} title=${track?.info?.title?.substring(0,30) || "null"}`);
     // Don't delete nowPlaying here — queueEnd will handle it;
     // keeps nowPlaying available during the trackEnd→queueEnd gap (prevents race with -np)
+    lavalink.stopPositionTracking(player.guildId);
     lavalink.cachePlayer(player.guildId, {
       voiceChannelId: player.voiceChannelId,
       textChannelId: player.textChannelId,
       currentTrack: null,
-      position: 0,
+      position: player.position || 0,
       volume: player.volume,
     });
   });
@@ -141,6 +144,7 @@ function register(client) {
   l.on("playerDisconnect", (player) => {
     state.nowPlaying.delete(player.guildId);
     state.queues.clear(player.guildId);
+    lavalink.stopPositionTracking(player.guildId);
     lavalink.uncachePlayer(player.guildId);
     const timer = disconnectTimers.get(player.guildId);
     if (timer) {

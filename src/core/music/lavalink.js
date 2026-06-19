@@ -7,13 +7,15 @@ const Logger = require("../utils/Logger");
 let lavalink;
 const connectedNodes = new Set();
 const reconnectTimers = new Map();
+const positionTimers = new Map(); // guildId -> setInterval
 
 // nodeName -> { guildId -> { voiceChannelId, textChannelId, currentTrack, position, volume } }
 const nodePlayers = new Map();
 
 function nodeLabel(node) {
   const op = node.options;
-  const num = op.name === "main" ? "1" : op.name === "backup" ? "2" : "?";
+  const idx = lavalinkConfig.nodes.findIndex((n) => n.name === op.name);
+  const num = idx >= 0 ? idx + 1 : "?";
   return `Node ${num} (${op.name}) [${op.host}:${op.port}]`;
 }
 
@@ -120,11 +122,9 @@ async function init(client) {
   if (connectedNodes.size > 0) {
     Logger.ready(`Lavalink ready — ${connectedNodes.size} node(s) connected`);
   } else {
-    for (const cfg of lavalinkConfig.nodes) {
-      const name = cfg.name || `${cfg.host}:${cfg.port}`;
-      const num = name === "main" ? "1" : name === "backup" ? "2" : "?";
-      Logger.warn(`Lavalink Node ${num} (${name}) [${cfg.host}:${cfg.port}] unavailable`);
-    }
+    lavalinkConfig.nodes.forEach((cfg, i) => {
+      Logger.warn(`Lavalink Node ${i + 1} (${cfg.name}) [${cfg.host}:${cfg.port}] unavailable`);
+    });
     Logger.warn("Lavalink is not available — music features disabled");
   }
 
@@ -146,11 +146,44 @@ function uncachePlayer(guildId) {
   }
 }
 
+function startPositionTracking(guildId) {
+  stopPositionTracking(guildId);
+  const timer = setInterval(() => {
+    const player = lavalink?.getPlayer(guildId);
+    if (!player || !player.playing) return;
+    cachePlayer(guildId, {
+      voiceChannelId: player.voiceChannelId,
+      textChannelId: player.textChannelId,
+      currentTrack: player.queue.current,
+      position: player.position || 0,
+      volume: player.volume,
+    });
+  }, 5000);
+  positionTimers.set(guildId, timer);
+}
+
+function stopPositionTracking(guildId) {
+  const timer = positionTimers.get(guildId);
+  if (timer) {
+    clearInterval(timer);
+    positionTimers.delete(guildId);
+  }
+}
+
+function getNextAvailableNode(failedNodeName) {
+  for (const cfg of lavalinkConfig.nodes) {
+    if (cfg.name !== failedNodeName && connectedNodes.has(cfg.name)) {
+      return cfg.name;
+    }
+  }
+  return null;
+}
+
 async function handleNodeFailover(nodeName) {
   const guilds = nodePlayers.get(nodeName);
   if (!guilds || !guilds.size) return;
 
-  const available = [...connectedNodes][0];
+  const available = getNextAvailableNode(nodeName);
   if (!available) {
     Logger.warn("No available Lavalink node for failover");
     return;
@@ -160,6 +193,7 @@ async function handleNodeFailover(nodeName) {
 
   for (const [guildId, info] of guilds) {
     try {
+      stopPositionTracking(guildId);
       const newPlayer = lavalink.createPlayer({
         guildId,
         voiceChannelId: info.voiceChannelId,
@@ -180,6 +214,7 @@ async function handleNodeFailover(nodeName) {
         });
       }
 
+      cachePlayer(guildId, info);
       Logger.info(`Resumed guild ${guildId} on node ${available}`);
     } catch (err) {
       Logger.error(`Failover failed for guild ${guildId}:`, err.message);
@@ -193,7 +228,7 @@ function get() {
   return lavalink;
 }
 
-module.exports = { init, get, cachePlayer, uncachePlayer };
+module.exports = { init, get, cachePlayer, uncachePlayer, startPositionTracking, stopPositionTracking };
 
 //======================
 // Created by monavia

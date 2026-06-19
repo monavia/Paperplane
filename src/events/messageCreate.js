@@ -109,6 +109,7 @@ module.exports = {
       }
 
       if (interpreted.type === "skip") {
+        Logger.info(`[SKIP-AI] seryn skip triggered by "${message.author.tag}"`);
         const voice = message.member.voice.channel;
         if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         const player = MusicService.getEngine(message.guildId).player;

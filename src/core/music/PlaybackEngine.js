@@ -1,5 +1,6 @@
 const state = require("../state/StateManager");
 const { getPlayer, createPlayer } = require("./PlayerManager");
+const Logger = require("../utils/Logger");
 
 class PlaybackEngine {
   constructor(guildId) {
@@ -18,6 +19,7 @@ class PlaybackEngine {
   }
 
   async skip() {
+    Logger.info(`[SKIP-ENGINE] stopPlaying() for guild ${this.guildId}`);
     const player = getPlayer(this.guildId);
     if (!player) return false;
     await player.stopPlaying();

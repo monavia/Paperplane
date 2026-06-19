@@ -11,6 +11,7 @@ function register(client) {
   if (!l) return;
 
   l.on("trackStart", (player, track) => {
+    Logger.info(`[trackStart] guild=${player.guildId} track=${track?.info?.title?.substring(0,30) || "null"}`);
     state.nowPlaying.set(player.guildId, track);
     Logger.debug(`Track started in ${player.guildId}: ${track.info.title}`);
 
@@ -43,6 +44,7 @@ function register(client) {
   });
 
   l.on("trackEnd", (player, track, reason) => {
+    Logger.info(`[trackEnd] guild=${player.guildId} reason=${typeof reason === 'object' ? reason?.reason : reason} title=${track?.info?.title?.substring(0,30) || "null"}`);
     state.nowPlaying.delete(player.guildId);
     lavalink.cachePlayer(player.guildId, {
       voiceChannelId: player.voiceChannelId,
@@ -54,11 +56,13 @@ function register(client) {
   });
 
   l.on("queueEnd", (player, track, payload) => {
+    Logger.info(`[queueEnd] guild=${player.guildId} queue.length=${state.queues.get(player.guildId).length} reason=${payload?.reason} current=${player.queue.current?.info?.title?.substring(0,30) || "null"}`);
     state.nowPlaying.delete(player.guildId);
 
     const queue = state.queues.get(player.guildId);
     if (queue.length > 0) {
       const next = queue.shift();
+      Logger.info(`[queueEnd] playing next: ${next.info.title?.substring(0,30)}`);
       state.queues.set(player.guildId, queue);
       state.nowPlaying.set(player.guildId, next);
       player.play({ track: next, clientTrack: next }).catch(err => {

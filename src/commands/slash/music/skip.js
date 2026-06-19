@@ -1,6 +1,5 @@
 const { SlashCommandBuilder } = require("discord.js");
 const MusicService = require("../../../services/MusicService");
-const SuccessEmbed = require("../../../ui/embeds/SuccessEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
 
 module.exports = {
@@ -17,7 +16,6 @@ module.exports = {
 
     try {
       await MusicService.skip(interaction.guildId);
-      await interaction.reply({ embeds: [SuccessEmbed.build("Lagu dilewati.")] });
     } catch (err) {
       await interaction.reply({ embeds: [ErrorEmbed.build(err.message)], ephemeral: true });
     }

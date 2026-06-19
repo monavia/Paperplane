@@ -186,6 +186,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
 async function skip(guildId) {
   const engine = getEngine(guildId);
+  Logger.info(`[SKIP-SERVICE] skip() called for guild ${guildId}`);
   const result = await engine.playback.skip();
   await saveState(guildId);
   return result;

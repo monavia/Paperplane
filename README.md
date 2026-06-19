@@ -1,3 +1,15 @@
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api/pin/?username=monavia&repo=paperplane&theme=tokyonight" alt="Repo Card" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
+  <img src="https://img.shields.io/badge/discord.js-5865F2?style=for-the-badge&logo=discord&logoColor=white" />
+  <img src="https://img.shields.io/badge/Lavalink-FF6B6B?style=for-the-badge&logo=discord&logoColor=white" />
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" />
+  <img src="https://img.shields.io/badge/license-MIT-yellow?style=for-the-badge" />
+</p>
+
 # Paperplane 🛩️
 
 A multifunctional Discord bot with music playback (Lavalink), local AI assistant (Ollama), and more.

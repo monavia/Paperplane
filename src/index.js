@@ -81,7 +81,7 @@ async function shutdown() {
   if (lavalink) {
     for (const [guildId, player] of lavalink.players || []) {
       await saveState(guildId);
-      player.destroy();
+      try { player.destroy(); } catch {}
     }
     await lavalink.nodeManager?.disconnectAll();
   }

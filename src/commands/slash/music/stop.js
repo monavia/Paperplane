@@ -25,7 +25,7 @@ module.exports = {
       await MusicService.stop(interaction.guildId);
 
       if (!wasPlaying) {
-        await interaction.reply({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+        await interaction.reply({ embeds: [SuccessEmbed.build("Stopped.")] });
       } else {
         await interaction.deleteReply().catch(() => {});
       }

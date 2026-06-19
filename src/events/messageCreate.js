@@ -146,7 +146,7 @@ module.exports = {
         const wasPlaying = player.playing || player.paused;
         await MusicService.stop(message.guildId);
         if (!wasPlaying) {
-          return message.channel.send({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+          return message.channel.send({ embeds: [SuccessEmbed.build("Stopped.")] });
         }
         return;
       }

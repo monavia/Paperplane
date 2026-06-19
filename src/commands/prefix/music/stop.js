@@ -19,7 +19,7 @@ module.exports = {
 
       // If nothing was playing, queueEnd won't fire — send message directly
       if (!wasPlaying) {
-        await message.channel.send({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+        await message.channel.send({ embeds: [SuccessEmbed.build("Stopped.")] });
       }
     } catch (err) {
       await message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });

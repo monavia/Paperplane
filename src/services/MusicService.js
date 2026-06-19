@@ -3,6 +3,7 @@ const Logger = require("../core/utils/Logger");
 const PlayerState = require("../database/models/PlayerState");
 
 const engines = new Map();
+const spotifyAbort = new Map();
 
 function getEngine(guildId) {
   if (!engines.has(guildId)) engines.set(guildId, new MusicEngine(guildId));
@@ -130,6 +131,7 @@ async function restoreAllStates(client) {
 }
 
 async function play(guildId, voiceChannelId, textChannelId, query, user, multi = false) {
+  spotifyAbort.set(guildId, true);
   const engine = getEngine(guildId);
   const player = await engine.join(voiceChannelId, textChannelId);
   if (!player) throw new Error("Failed to create player");
@@ -169,13 +171,15 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
     await saveState(guildId);
 
-    // Return immediately; resolve remaining tracks in background
+    // Return immediately; resolve remaining tracks in background (cancellable)
     const remaining = tracksToSearch.slice(1);
     if (remaining.length) {
+      spotifyAbort.set(guildId, false);
       const p = player;
       process.nextTick(async () => {
         let count = 1;
         for (const item of remaining) {
+          if (spotifyAbort.get(guildId)) break;
           try {
             const r = await p.search({ query: `ytsearch:${item.query}` }, user);
             if (r?.tracks?.length) {
@@ -185,6 +189,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
           } catch {}
           await new Promise((r) => setTimeout(r, 350));
         }
+        spotifyAbort.delete(guildId);
         Logger.info(`Resolved ${count}/${tracksToSearch.length} Spotify tracks for ${guildId}`);
         await saveState(guildId);
       });
@@ -234,6 +239,7 @@ async function skip(guildId) {
 }
 
 async function stop(guildId) {
+  spotifyAbort.set(guildId, true);
   const engine = getEngine(guildId);
   await engine.playback.stop();
   await saveState(guildId);

@@ -102,7 +102,7 @@ function register(client) {
       const channel = client.channels.cache.get(player.textChannelId);
       if (channel) {
         const embed = new EmbedBuilder()
-          .setDescription("Antrian telah kosong.")
+          .setDescription("Stopped.")
           .setColor(Colors.WARNING);
         channel.send({ embeds: [embed] }).catch(() => {});
       }

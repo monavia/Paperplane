@@ -5,7 +5,6 @@ const Logger = require("../../../core/utils/Logger");
 module.exports = {
   name: "skip",
   async execute(message, args) {
-    Logger.info(`[SKIP-PREFIX] -skip triggered by "${message.author.tag}"`);
     const voice = message.member.voice.channel;
     if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
 

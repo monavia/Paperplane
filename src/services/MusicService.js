@@ -56,6 +56,10 @@ async function deleteState(guildId) {
 async function restoreAllStates(client) {
   try {
     const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+    // Clean up stale states (>5 min) that won't be restored
+    await PlayerState.deleteMany({ updatedAt: { $lt: fiveMinAgo } });
+
     const states = await PlayerState.find({ updatedAt: { $gte: fiveMinAgo } });
 
     for (const state of states) {
@@ -78,24 +82,45 @@ async function restoreAllStates(client) {
         continue;
       }
 
-      const tracks = [];
-      if (state.nowPlaying) tracks.push(state.nowPlaying);
-      if (state.queue?.length) tracks.push(...state.queue);
-
-      for (const track of tracks) {
-        engine.queue.add(track);
-      }
-
-      const first = engine.queue.next();
-      if (first) {
+      // Check if Lavalink resume already restored a playing track
+      let resumedTrackActive = false;
+      const node = player?.node;
+      if (node?.connected) {
         try {
-          await player.play({ track: first, clientTrack: first });
-        } catch (err) {
-          Logger.error(`Restore playback failed for ${state.guildId}:`, err.message);
-        }
+          const remote = await node.fetchPlayer(state.guildId);
+          resumedTrackActive = remote?.track?.encoded != null;
+        } catch {}
       }
 
-      Logger.info(`Restored player state for guild ${state.guildId}`);
+      if (resumedTrackActive) {
+        // Resume is active — queue will auto-advance when resumed track finishes
+        if (state.queue?.length) {
+          for (const t of state.queue) {
+            engine.queue.add(t);
+          }
+        }
+        Logger.info(`Resume active for ${state.guildId}, restored ${engine.queue.size()} queued tracks`);
+      } else {
+        // No resume — restore nowPlaying + queue and play the first track
+        const tracks = [];
+        if (state.nowPlaying) tracks.push(state.nowPlaying);
+        if (state.queue?.length) tracks.push(...state.queue);
+
+        for (const track of tracks) {
+          engine.queue.add(track);
+        }
+
+        const first = engine.queue.next();
+        if (first) {
+          try {
+            await player.play({ track: first, clientTrack: first });
+          } catch (err) {
+            Logger.error(`Restore playback failed for ${state.guildId}:`, err.message);
+          }
+        }
+
+        Logger.info(`Restored player state for guild ${state.guildId}`);
+      }
     }
 
     if (states.length) Logger.info(`Restored ${states.length} player(s) from saved state`);
@@ -186,7 +211,6 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
 async function skip(guildId) {
   const engine = getEngine(guildId);
-  Logger.info(`[SKIP-SERVICE] skip() called for guild ${guildId}`);
   const result = await engine.playback.skip();
   await saveState(guildId);
   return result;

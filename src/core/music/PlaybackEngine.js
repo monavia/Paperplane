@@ -19,7 +19,6 @@ class PlaybackEngine {
   }
 
   async skip() {
-    Logger.info(`[SKIP-ENGINE] stopPlaying() for guild ${this.guildId}`);
     const player = getPlayer(this.guildId);
     if (!player) return false;
     await player.stopPlaying();

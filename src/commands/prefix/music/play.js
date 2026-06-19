@@ -20,17 +20,15 @@ module.exports = {
     try {
       const { engine, result, track } = await MusicService.play(message.guildId, voice.id, message.channelId, query, message.author);
 
+      await msg.delete().catch(() => {});
+
       if (result.loadType === "playlist") {
-        await msg.edit({ content: null, embeds: [SuccessEmbed.build(`Added ${result.tracks.length} tracks to the queue.`)] });
-      } else {
-        await msg.edit({
-          content: null,
-          embeds: [NowPlayingEmbed.build(track, engine.player)],
-        });
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${result.tracks.length} tracks to the queue.`)] });
       }
     } catch (err) {
       Logger.error("!play error:", err.message);
-      await msg.edit({ content: null, embeds: [ErrorEmbed.build(err.message)] });
+      await msg.delete().catch(() => {});
+      return message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });
     }
   },
 };

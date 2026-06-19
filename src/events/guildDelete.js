@@ -1,5 +1,6 @@
 const { Events } = require("discord.js");
 const Logger = require("../core/utils/Logger");
+const GuildRepository = require("../database/repositories/GuildRepository");
 const { destroyEngine } = require("../services/MusicService");
 
 module.exports = {
@@ -7,6 +8,7 @@ module.exports = {
   async execute(guild) {
     Logger.info(`Left guild: ${guild.name} (${guild.id})`);
     await destroyEngine(guild.id);
+    await GuildRepository.deleteGuild(guild.id);
   },
 };
 

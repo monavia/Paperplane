@@ -6,6 +6,7 @@ const Logger = require("../utils/Logger");
 
 let lavalink;
 const connectedNodes = new Set();
+const reconnectTimers = new Map();
 
 // nodeName -> { guildId -> { voiceChannelId, textChannelId, currentTrack, position, volume } }
 const nodePlayers = new Map();
@@ -14,6 +15,35 @@ function nodeLabel(node) {
   const op = node.options;
   const num = op.name === "main" ? "1" : op.name === "backup" ? "2" : "?";
   return `Node ${num} (${op.name}) [${op.host}:${op.port}]`;
+}
+
+function startNodeReconnectLoop(nodeName) {
+  if (reconnectTimers.has(nodeName)) return;
+
+  const timer = setInterval(() => {
+    let node = lavalink.nodeManager.nodes.get(nodeName);
+    if (node?.connected) {
+      clearInterval(timer);
+      reconnectTimers.delete(nodeName);
+      return;
+    }
+
+    if (!node) {
+      const cfg = lavalinkConfig.nodes.find((n) => n.name === nodeName);
+      if (!cfg) {
+        clearInterval(timer);
+        reconnectTimers.delete(nodeName);
+        return;
+      }
+      node = lavalink.nodeManager.createNode({ ...cfg });
+    }
+
+    Logger.info(`Reconnecting ${nodeName} node...`);
+    node.connect();
+  }, 5 * 60 * 1000);
+
+  reconnectTimers.set(nodeName, timer);
+  Logger.info(`Periodic reconnect loop started for ${nodeName} (every 5 min)`);
 }
 
 async function init(client) {
@@ -35,6 +65,13 @@ async function init(client) {
     if (connectedNodes.has(name)) return;
     connectedNodes.add(name);
     Logger.ready(`Lavalink ${nodeLabel(node)} connected`);
+
+    const timer = reconnectTimers.get(name);
+    if (timer) {
+      clearInterval(timer);
+      reconnectTimers.delete(name);
+      Logger.info(`Periodic reconnect loop stopped for ${name} (node connected)`);
+    }
   });
 
   lavalink.nodeManager.on("disconnect", (node, { code, reason }) => {
@@ -43,6 +80,12 @@ async function init(client) {
     connectedNodes.delete(name);
     Logger.warn(`Lavalink ${nodeLabel(node)} disconnected (${code}) ${reason || ""}`);
     handleNodeFailover(name);
+  });
+
+  lavalink.nodeManager.on("destroy", (node, reason) => {
+    const name = node.options.name;
+    Logger.warn(`Lavalink ${nodeLabel(node)} destroyed (${reason})`);
+    startNodeReconnectLoop(name);
   });
 
   lavalink.nodeManager.on("error", (node, err) => {

@@ -5,13 +5,13 @@ const { EmbedBuilder } = require("discord.js");
 const Colors = require("../constants/Colors");
 
 const disconnectTimers = new Map();
+const errorTimestamps = new Map(); // guildId -> [timestamp] (for cascade throttle)
 
 function register(client) {
   const l = lavalink.get();
   if (!l) return;
 
   l.on("trackStart", (player, track) => {
-    Logger.info(`[trackStart] guild=${player.guildId} track=${track?.info?.title?.substring(0,30) || "null"}`);
     state.nowPlaying.set(player.guildId, track);
     Logger.debug(`Track started in ${player.guildId}: ${track.info.title}`);
 
@@ -45,7 +45,8 @@ function register(client) {
 
   l.on("trackEnd", (player, track, reason) => {
     Logger.info(`[trackEnd] guild=${player.guildId} reason=${typeof reason === 'object' ? reason?.reason : reason} title=${track?.info?.title?.substring(0,30) || "null"}`);
-    state.nowPlaying.delete(player.guildId);
+    // Don't delete nowPlaying here — queueEnd will handle it;
+    // keeps nowPlaying available during the trackEnd→queueEnd gap (prevents race with -np)
     lavalink.cachePlayer(player.guildId, {
       voiceChannelId: player.voiceChannelId,
       textChannelId: player.textChannelId,
@@ -55,23 +56,45 @@ function register(client) {
     });
   });
 
-  l.on("queueEnd", (player, track, payload) => {
-    Logger.info(`[queueEnd] guild=${player.guildId} queue.length=${state.queues.get(player.guildId).length} reason=${payload?.reason} current=${player.queue.current?.info?.title?.substring(0,30) || "null"}`);
-    state.nowPlaying.delete(player.guildId);
-
-    const queue = state.queues.get(player.guildId);
-    if (queue.length > 0) {
-      const next = queue.shift();
-      Logger.info(`[queueEnd] playing next: ${next.info.title?.substring(0,30)}`);
+  l.on("queueEnd", async (player, track, payload) => {
+    // Loop to skip unresolvable tracks (prevents cascade spam)
+    // NOTE: state.nowPlaying is NOT deleted here — trackEnd keeps the old track
+    // visible during the gap. It's only deleted when queue is truly empty below.
+    let next = null;
+    while (true) {
+      const queue = state.queues.get(player.guildId);
+      if (!queue.length) break;
+      next = queue.shift();
       state.queues.set(player.guildId, queue);
+
+      // Re-search if encoded is missing (e.g. stale from DB restore)
+      if (!next.encoded && next.info?.uri) {
+        try {
+          const res = await player.search({ query: next.info.uri }, client.user);
+          if (res?.tracks?.length) {
+            Object.assign(next, res.tracks[0]);
+          }
+        } catch {}
+      }
+
+      if (!next.encoded) {
+        next = null;
+        continue;
+      }
+
+      break;
+    }
+
+    if (next) {
       state.nowPlaying.set(player.guildId, next);
       player.play({ track: next, clientTrack: next }).catch(err => {
-        Logger.error(`Failed to play next: ${next.info.title} — ${err.message}`);
+        Logger.error(`Failed to play next: ${next.info?.title} — ${err.message}`);
       });
       return;
     }
 
     // Queue is empty — start 3-minute disconnect timer
+    state.nowPlaying.delete(player.guildId);
     if (player.textChannelId) {
       const channel = client.channels.cache.get(player.textChannelId);
       if (channel) {
@@ -94,7 +117,25 @@ function register(client) {
   });
 
   l.on("trackError", (player, track, error) => {
-    Logger.error(`Track error in ${player.guildId}:`, error.message);
+    Logger.error(`Track error in ${player.guildId}: ${error.message}`);
+
+    // Throttle: skip if 5+ errors within 15 seconds (prevents infinite cascade)
+    const now = Date.now();
+    const guildErrors = errorTimestamps.get(player.guildId) || [];
+    const recent = guildErrors.filter(t => now - t < 15000);
+    recent.push(now);
+    errorTimestamps.set(player.guildId, recent);
+    if (recent.length >= 5) {
+      Logger.error(`[trackError] cascade throttle triggered for ${player.guildId}, stopping playback`);
+      errorTimestamps.delete(player.guildId);
+      player.stopPlaying().catch(() => {});
+      return;
+    }
+
+    // Auto-skip to next track
+    if (player.node?.connected) {
+      player.stopPlaying().catch(() => {});
+    }
   });
 
   l.on("playerDisconnect", (player) => {

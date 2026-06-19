@@ -5,9 +5,16 @@ const botConfig = require("../../config/bot");
 const Logger = require("../utils/Logger");
 
 let lavalink;
+const connectedNodes = new Set();
 
 // nodeName -> { guildId -> { voiceChannelId, textChannelId, currentTrack, position, volume } }
 const nodePlayers = new Map();
+
+function nodeLabel(node) {
+  const op = node.options;
+  const num = op.name === "main" ? "1" : op.name === "backup" ? "2" : "?";
+  return `Node ${num} (${op.name}) [${op.host}:${op.port}]`;
+}
 
 async function init(client) {
   lavalink = new LavalinkManager({
@@ -22,21 +29,31 @@ async function init(client) {
     },
   });
 
-  lavalink.on("nodeConnected", (node) => {
-    Logger.info(`Lavalink node ready: ${node.host}:${node.port} (${node.name})`);
+  // Listen on nodeManager for real node events
+  lavalink.nodeManager.on("connect", (node) => {
+    const name = node.options.name;
+    if (connectedNodes.has(name)) return;
+    connectedNodes.add(name);
+    Logger.ready(`Lavalink ${nodeLabel(node)} connected`);
   });
 
-  lavalink.on("nodeDisconnected", (node, code, reason) => {
-    Logger.warn(`Lavalink node disconnected: ${node.host}:${node.port} (${code}) ${reason || ""}`);
-    handleNodeFailover(node.name);
+  lavalink.nodeManager.on("disconnect", (node, { code, reason }) => {
+    const name = node.options.name;
+    if (!connectedNodes.has(name)) return;
+    connectedNodes.delete(name);
+    Logger.warn(`Lavalink ${nodeLabel(node)} disconnected (${code}) ${reason || ""}`);
+    handleNodeFailover(name);
   });
 
-  lavalink.on("nodeError", (node, err) =>
-    Logger.error(`Lavalink node error: ${node.host}:${node.port}`, err.message),
-  );
-  lavalink.on("error", (err) =>
-    Logger.error("Lavalink error:", err.message),
-  );
+  lavalink.nodeManager.on("error", (node, err) => {
+    if (!connectedNodes.has(node.options.name)) return;
+    Logger.error(`Lavalink ${nodeLabel(node)} error: ${err.message}`);
+  });
+
+  // Catch errors on the manager itself
+  lavalink.on("error", (err) => {
+    Logger.error("Lavalink error:", err.message);
+  });
 
   client.on("raw", (d) => lavalink.sendRawData(d));
 
@@ -45,26 +62,26 @@ async function init(client) {
     username: client.user?.username || "bot",
   });
 
-  if (lavalink.useable) {
-    Logger.ready("Lavalink connected");
-    return lavalink;
-  }
-
+  // Wait up to 20s for at least one node to connect
   await new Promise((resolve) => {
-    const done = () => {
-      lavalink.removeListener("nodeConnected", done);
-      resolve();
+    const check = () => {
+      if (lavalink.useable) resolve();
     };
-    lavalink.on("nodeConnected", done);
+    lavalink.nodeManager.on("connect", check);
     setTimeout(() => {
-      lavalink.removeListener("nodeConnected", done);
+      lavalink.nodeManager.removeListener("connect", check);
       resolve();
-    }, 15000);
+    }, 20000);
   });
 
-  if (lavalink.useable) {
-    Logger.ready("Lavalink connected");
+  if (connectedNodes.size > 0) {
+    Logger.ready(`Lavalink ready — ${connectedNodes.size} node(s) connected`);
   } else {
+    for (const cfg of lavalinkConfig.nodes) {
+      const name = cfg.name || `${cfg.host}:${cfg.port}`;
+      const num = name === "main" ? "1" : name === "backup" ? "2" : "?";
+      Logger.warn(`Lavalink Node ${num} (${name}) [${cfg.host}:${cfg.port}] unavailable`);
+    }
     Logger.warn("Lavalink is not available — music features disabled");
   }
 
@@ -90,13 +107,13 @@ async function handleNodeFailover(nodeName) {
   const guilds = nodePlayers.get(nodeName);
   if (!guilds || !guilds.size) return;
 
-  const available = findAvailableNode();
+  const available = [...connectedNodes][0];
   if (!available) {
     Logger.warn("No available Lavalink node for failover");
     return;
   }
 
-  Logger.info(`Failing over ${guilds.size} guild(s) to node ${available.name}`);
+  Logger.info(`Failing over ${guilds.size} guild(s) to node ${available}`);
 
   for (const [guildId, info] of guilds) {
     try {
@@ -120,21 +137,13 @@ async function handleNodeFailover(nodeName) {
         });
       }
 
-      Logger.info(`Resumed guild ${guildId} on node ${available.name}`);
+      Logger.info(`Resumed guild ${guildId} on node ${available}`);
     } catch (err) {
       Logger.error(`Failover failed for guild ${guildId}:`, err.message);
     }
   }
 
   nodePlayers.delete(nodeName);
-}
-
-function findAvailableNode() {
-  for (const [name] of lavalink.nodes) {
-    const node = lavalink.nodes.get(name);
-    if (node?.connected) return node;
-  }
-  return null;
 }
 
 function get() {

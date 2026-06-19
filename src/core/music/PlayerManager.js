@@ -6,6 +6,7 @@ function getPlayer(guildId) {
 }
 
 async function createPlayer(guildId, voiceChannelId, textChannelId) {
+  const nodeName = lavalink.getNextAvailableNode();
   const player = lavalink.get()?.createPlayer({
     guildId,
     voiceChannelId,
@@ -13,6 +14,7 @@ async function createPlayer(guildId, voiceChannelId, textChannelId) {
     selfDeaf: true,
     selfMute: false,
     volume: musicConfig.defaultVolume,
+    node: nodeName,
   });
   if (player && voiceChannelId) {
     await player.connect();

@@ -207,6 +207,7 @@ async function handleNodeFailover(nodeName) {
         selfDeaf: true,
         selfMute: false,
         volume: info.volume || 80,
+        node: available,
       });
 
       if (info.voiceChannelId) await newPlayer.connect();

@@ -9,6 +9,7 @@ const ErrorEmbed = require("../ui/embeds/ErrorEmbed");
 const SuccessEmbed = require("../ui/embeds/SuccessEmbed");
 const QueueEmbed = require("../ui/embeds/QueueEmbed");
 const NowPlayingEmbed = require("../ui/embeds/NowPlayingEmbed");
+const LoadingEmbed = require("../ui/embeds/LoadingEmbed");
 const Logger = require("../core/utils/Logger");
 
 const trigger = botConfig.trigger;
@@ -151,6 +152,69 @@ module.exports = {
         return message.channel.send({ embeds: [SuccessEmbed.build("Playback dilanjutkan.")] });
       }
 
+      if (interpreted.type === "autoplay") {
+        const engine = MusicService.getEngine(message.guildId);
+        if (!engine) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada player aktif.")] });
+        engine.playback.autoplay = !engine.playback.autoplay;
+        const status = engine.playback.autoplay ? "diaktifkan" : "dinonaktifkan";
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Autoplay ${status}.`)] });
+      }
+
+      if (interpreted.type === "shuffle") {
+        const tracks = MusicService.getQueue(message.guildId);
+        if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
+        await MusicService.shuffle(message.guildId);
+        return message.channel.send({ embeds: [SuccessEmbed.build("Antrian diacak.")] });
+      }
+
+      if (interpreted.type === "loop") {
+        const player = getPlayer(message.guildId);
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada player aktif.")] });
+        const args = input.split(/\s+/).slice(1);
+        const mode = args[0]?.toLowerCase();
+        if (!mode || !["none", "track", "queue"].includes(mode)) {
+          return message.channel.send({ embeds: [ErrorEmbed.build("Gunakan: loop <none|track|queue>")] });
+        }
+        player.setLoop(mode);
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Mode loop: \`${mode}\`.`)] });
+      }
+
+      if (interpreted.type === "seek") {
+        const player = getPlayer(message.guildId);
+        if (!player || !player.queue.current) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang diputar.")] });
+        const { parseTimestamp, parseDuration } = require("../core/utils/Duration");
+        const args = input.split(/\s+/).slice(1);
+        const posStr = args.join(" ");
+        if (!posStr) return message.channel.send({ embeds: [ErrorEmbed.build("Gunakan: seek <mm:ss atau ss>")] });
+        const ms = parseTimestamp(posStr);
+        if (isNaN(ms)) return message.channel.send({ embeds: [ErrorEmbed.build("Format waktu salah. Gunakan mm:ss atau ss.")] });
+        if (ms > player.queue.current.info.duration) return message.channel.send({ embeds: [ErrorEmbed.build("Melebihi durasi lagu.")] });
+        player.seek(ms);
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Loncat ke ${parseDuration(ms)}.`)] });
+      }
+
+      if (interpreted.type === "volume") {
+        const args = input.split(/\s+/).slice(1);
+        const level = parseInt(args[0]);
+        if (isNaN(level) || level < 1 || level > 100) return message.channel.send({ embeds: [ErrorEmbed.build("Volume harus 1-100.")] });
+        MusicService.setVolume(message.guildId, level);
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Volume diatur ke ${level}%`)] });
+      }
+
+      if (interpreted.type === "ping") {
+        const PingEmbed = require("../ui/embeds/PingEmbed");
+        const sent = await message.channel.send({ embeds: [LoadingEmbed.build("Pinging...")] });
+        const botLatency = sent.createdTimestamp - message.createdTimestamp;
+        const apiLatency = message.client.ws.ping;
+        await sent.edit({ content: null, embeds: [PingEmbed.build(botLatency, apiLatency)] });
+        return;
+      }
+
+      if (interpreted.type === "stats") {
+        const StatsEmbed = require("../ui/embeds/StatsEmbed");
+        return message.channel.send({ embeds: [StatsEmbed.build(message.client)] });
+      }
+
       if (interpreted.type === "queue") {
         const tracks = MusicService.getQueue(message.guildId);
         if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
@@ -237,13 +301,32 @@ module.exports = {
         return message.channel.send({ embeds: [embed] });
       }
 
+      if (interpreted.type === "info") {
+        const { EmbedBuilder } = require("discord.js");
+        const Colors = require("../core/constants/Colors");
+        const embed = new EmbedBuilder()
+          .setTitle(message.client.user.username)
+          .setDescription("A full-featured Discord bot with music playback (Lavalink), AI assistant, and more.")
+          .addFields(
+            { name: "Version", value: "2.0.0", inline: true },
+            { name: "Library", value: "discord.js v14", inline: true },
+            { name: "Music Engine", value: "Lavalink", inline: true },
+            { name: "AI Engine", value: "Ollama (Local)", inline: true },
+            { name: "Servers", value: String(message.client.guilds.cache.size), inline: true },
+          )
+          .setThumbnail(message.client.user.displayAvatarURL())
+          .setColor(Colors.INFO);
+        return message.channel.send({ embeds: [embed] });
+      }
+
       // Chat response
       const today = new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
       const reply = await AIEngine.ask(message.author.id, input, `Today is ${today}. You are a helpful Discord assistant. Answer concisely.`);
       if (reply) message.channel.send(reply);
     } catch (err) {
       Logger.error("AI command error:", err.message);
-      message.channel.send({ embeds: [ErrorEmbed.build("Maaf, terjadi kesalahan.")] }).catch(() => {});
+      const isOffline = /fetch\s+failed|ECONNREFUSED|Ollama error/i.test(err.message);
+      message.channel.send({ embeds: [ErrorEmbed.build(isOffline ? "Maaf, AI sedang offline." : "Maaf, terjadi kesalahan.")] }).catch(() => {});
     }
   },
 };

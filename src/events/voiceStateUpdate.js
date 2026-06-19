@@ -34,7 +34,7 @@ module.exports = {
           if (channel.members.size === 1 && channel.members.has(botId)) {
             await destroyEngine(guildId);
           }
-        }, 60000);
+        }, 300000);
       }
     }
   },

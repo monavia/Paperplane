@@ -85,7 +85,7 @@ module.exports = {
         } catch (err) {
           await msg.delete().catch(() => {});
           Logger.error("AI play error:", err.message);
-          return message.channel.send({ embeds: [ErrorEmbed.build(`Gagal memutar: ${err.message}`)] }).catch(() => {});
+          return message.channel.send({ embeds: [ErrorEmbed.build(err.message)] }).catch(() => {});
         }
       }
 

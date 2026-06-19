@@ -151,6 +151,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
         const result = await player.search({ query: `ytsearch:${item.query}` }, user);
         if (result?.tracks?.length) allTracks.push(result.tracks[0]);
       } catch {}
+      await new Promise((r) => setTimeout(r, 350));
     }
 
     if (!allTracks.length) throw new Error("Tidak ada lagu dari Spotify yang bisa diputar.");

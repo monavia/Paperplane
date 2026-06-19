@@ -134,7 +134,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
   const player = await engine.join(voiceChannelId, textChannelId);
   if (!player) throw new Error("Failed to create player");
 
-  // Intercept Spotify URLs — scrape + search on YouTube
+  // Intercept Spotify URLs — scrape HTML + search on YouTube
   const spotifyScraper = require("../core/music/SpotifyScraper");
   const spotifyParsed = spotifyScraper.parseUrl(query);
 

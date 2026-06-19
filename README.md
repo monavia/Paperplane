@@ -10,18 +10,64 @@
   <img src="https://img.shields.io/badge/license-MIT-yellow?style=for-the-badge" />
 </p>
 
-# Paperplane 🛩️
+<h1 align="center">🛩️ Paperplane</h1>
+<p align="center"><b>Music • AI • Moderation • Utility — Your All-in-One Discord Bot</b></p>
 
-A multifunctional Discord bot with music playback (Lavalink), local AI assistant (Ollama), and more.
+---
 
-## Features
+## ✨ Why Paperplane?
 
-- 🎵 **Music** — High-quality audio via Lavalink, playlist support, queue management
-- 🤖 **AI Assistant** — Natural language commands via local Ollama models (no API costs)
-- ⚡ **Slash + Prefix Commands** — Full parity between `/` and `!` commands
-- 💾 **Persistent Settings** — Guild configuration via MongoDB
-- 📋 **Playlist Import** — YouTube playlist support
-- 🔀 **Queue Controls** — Shuffle, loop, skip, seek, volume
+| Feature | Description |
+|---|---|
+| 🎵 **Music** | High-quality audio via Lavalink — play, queue, skip, loop, shuffle |
+| 🤖 **AI Assistant** | Powered by local Ollama models — no API costs, full privacy |
+| ⚡ **Hybrid Commands** | Slash (`/`) & prefix (`!`) commands, fully synced |
+| 💾 **Persistent Settings** | Guild config saved via MongoDB |
+| 📋 **Playlist Import** | Full YouTube playlist support |
+| 🛡️ **Reliable** | Built with discord.js v14, battle-tested |
+
+## 🚀 What Makes It Unique
+
+- **Self-hosted AI** — No external API keys needed; runs on your own Ollama instance
+- **Zero dependency on paid services** — Fully local operation
+- **Modular architecture** — Easy to extend with new commands and features
+- **Minimal resource usage** — Designed for efficiency
+
+## 💎 Add to Your Server
+
+<p align="center">
+  <a href="https://discord.com/oauth2/authorize?client_id=957823446564352080">
+    <img src="https://img.shields.io/badge/Invite%20Paperplane-5865F2?style=for-the-badge&logo=discord&logoColor=white" alt="Invite Paperplane" />
+  </a>
+</p>
+
+<p align="center">
+  <b><a href="https://discord.com/oauth2/authorize?client_id=957823446564352080">» Invite Paperplane to Your Server «</a></b>
+</p>
+
+### Required Permissions
+
+| Permission | Purpose |
+|---|---|
+| `Send Messages` | Menampilkan respon dan embed |
+| `Embed Links` | Mengirim rich embed |
+| `Read Message History` | Membaca perintah slash |
+| `Connect` | Bergabung ke voice channel |
+| `Speak` | Memutar musik |
+| `Use Voice Activity` | Deteksi suara |
+
+---
+
+## Quick Start
+
+```bash
+git clone https://github.com/monavia/paperplane
+cd paperplane
+npm install
+cp .env.example .env
+# Edit .env with your bot token and settings
+npm start
+```
 
 ## Requirements
 
@@ -29,22 +75,6 @@ A multifunctional Discord bot with music playback (Lavalink), local AI assistant
 - [Lavalink](https://github.com/lavalink-devs/Lavalink) server (music)
 - [MongoDB](https://www.mongodb.com/) (optional — guild settings)
 - [Ollama](https://ollama.com/) (optional — AI features)
-
-## Quick Start
-
-```bash
-# Clone & install
-git clone https://github.com/monavia/paperplane
-cd paperplane
-npm install
-
-# Configure
-cp .env.example .env
-# Edit .env with your bot token and settings
-
-# Run
-npm start
-```
 
 ## Environment Variables
 
@@ -97,3 +127,5 @@ src/
 ## License
 
 MIT
+
+<p align="center"><i>Paperplane — Lightweight, powerful, and yours.</i></p>

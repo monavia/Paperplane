@@ -6,7 +6,7 @@ const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("stop")
-    .setDescription("Stop playback and disconnect from voice"),
+    .setDescription("Stop playback (auto-disconnect after 3 menit)"),
 
   async execute(interaction) {
     const voice = interaction.member.voice.channel;
@@ -15,11 +15,26 @@ module.exports = {
     const player = MusicService.getEngine(interaction.guildId).player;
     if (!player) return interaction.reply({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")], ephemeral: true });
 
+    const wasPlaying = player.playing || player.paused;
+
     try {
+      if (wasPlaying) {
+        await interaction.deferReply();
+      }
+
       await MusicService.stop(interaction.guildId);
-      await interaction.reply({ embeds: [SuccessEmbed.build("Playback dihentikan.")] });
+
+      if (!wasPlaying) {
+        await interaction.reply({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+      } else {
+        await interaction.deleteReply().catch(() => {});
+      }
     } catch (err) {
-      await interaction.reply({ embeds: [ErrorEmbed.build(err.message)], ephemeral: true });
+      if (interaction.deferred) {
+        await interaction.editReply({ embeds: [ErrorEmbed.build(err.message)] });
+      } else {
+        await interaction.reply({ embeds: [ErrorEmbed.build(err.message)], ephemeral: true });
+      }
     }
   },
 };

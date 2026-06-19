@@ -123,8 +123,12 @@ module.exports = {
         if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         const player = MusicService.getEngine(message.guildId).player;
         if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        const wasPlaying = player.playing || player.paused;
         await MusicService.stop(message.guildId);
-        return message.channel.send({ embeds: [SuccessEmbed.build("Playback dihentikan.")] });
+        if (!wasPlaying) {
+          return message.channel.send({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+        }
+        return;
       }
 
       if (interpreted.type === "pause") {

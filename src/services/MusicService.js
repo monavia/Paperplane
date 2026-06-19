@@ -218,8 +218,8 @@ async function skip(guildId) {
 
 async function stop(guildId) {
   const engine = getEngine(guildId);
-  await engine.disconnect();
-  await destroyEngine(guildId);
+  await engine.playback.stop();
+  await saveState(guildId);
 }
 
 async function pause(guildId) {

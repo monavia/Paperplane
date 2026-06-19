@@ -8,12 +8,19 @@ module.exports = {
     const voice = message.member.voice.channel;
     if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
 
-    const player = MusicService.getEngine(message.guildId).player;
+    const engine = MusicService.getEngine(message.guildId);
+    const player = engine?.player;
     if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+
+    const wasPlaying = player.playing || player.paused;
 
     try {
       await MusicService.stop(message.guildId);
-      await message.channel.send({ embeds: [SuccessEmbed.build("Playback dihentikan.")] });
+
+      // If nothing was playing, queueEnd won't fire — send message directly
+      if (!wasPlaying) {
+        await message.channel.send({ embeds: [SuccessEmbed.build("Antrian telah distop.")] });
+      }
     } catch (err) {
       await message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });
     }

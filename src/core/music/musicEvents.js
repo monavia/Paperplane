@@ -99,7 +99,7 @@ function register(client) {
       const channel = client.channels.cache.get(player.textChannelId);
       if (channel) {
         const embed = new EmbedBuilder()
-          .setDescription("Antrian selesai. Bot akan disconnect otomatis 3 menit lagi.")
+          .setDescription("Antrian telah distop.")
           .setColor(Colors.WARNING);
         channel.send({ embeds: [embed] }).catch(() => {});
       }

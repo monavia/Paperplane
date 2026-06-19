@@ -107,10 +107,11 @@ async function init(client) {
     username: client.user?.username || "bot",
   });
 
-  // Wait up to 20s for at least one node to connect
+  // Wait up to 20s for all nodes to connect
   await new Promise((resolve) => {
     const check = () => {
-      if (lavalink.useable) resolve();
+      const remaining = lavalinkConfig.nodes.filter((n) => !connectedNodes.has(n.name));
+      if (remaining.length === 0) resolve();
     };
     lavalink.nodeManager.on("connect", check);
     setTimeout(() => {
@@ -119,12 +120,17 @@ async function init(client) {
     }, 20000);
   });
 
-  if (connectedNodes.size > 0) {
-    Logger.ready(`Lavalink ready — ${connectedNodes.size} node(s) connected`);
+  const total = lavalinkConfig.nodes.length;
+  const connected = connectedNodes.size;
+  const failed = lavalinkConfig.nodes.filter((n) => !connectedNodes.has(n.name));
+
+  failed.forEach((cfg) => {
+    Logger.warn(`Lavalink ${cfg.name} [${cfg.host}:${cfg.port}] not connected`);
+  });
+
+  if (connected > 0) {
+    Logger.ready(`Lavalink ready — ${connected}/${total} node(s) connected`);
   } else {
-    lavalinkConfig.nodes.forEach((cfg, i) => {
-      Logger.warn(`Lavalink Node ${i + 1} (${cfg.name}) [${cfg.host}:${cfg.port}] unavailable`);
-    });
     Logger.warn("Lavalink is not available — music features disabled");
   }
 

@@ -192,7 +192,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
     return {
       engine, player,
-      result: { tracks: allTracks, loadType: "track" },
+      result: { tracks: allTracks, loadType: "track", spotifyTotal: tracksToSearch.length },
       track: allTracks[0],
     };
   }

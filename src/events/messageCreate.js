@@ -72,6 +72,9 @@ module.exports = {
           if (result?.loadType === "playlist") {
             return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
           }
+          if (result?.spotifyTotal) {
+            message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.spotifyTotal} lagu ke antrian...`)] }).catch(() => {});
+          }
           if (wasPlaying || result?.tracks?.length > 1) {
             const title = track?.info?.title || track?.title || track?.name || "lagu";
             const url = track?.info?.uri;

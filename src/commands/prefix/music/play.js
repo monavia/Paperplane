@@ -15,6 +15,7 @@ module.exports = {
     const voice = message.member.voice.channel;
     if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
 
+    const wasPlaying = MusicService.getEngine(message.guildId)?.player?.playing || false;
     const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
 
     try {
@@ -27,6 +28,13 @@ module.exports = {
       }
       if (result?.spotifyTotal) {
         message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.spotifyTotal} lagu ke antrian...`)] }).catch(() => {});
+        return;
+      }
+      if (wasPlaying) {
+        const title = track?.info?.title || track?.title || track?.name || "lagu";
+        const url = track?.info?.uri;
+        const label = url ? `[${title}](${url})` : title;
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${label}`)] });
       }
     } catch (err) {
       Logger.error("!play error:", err.message);

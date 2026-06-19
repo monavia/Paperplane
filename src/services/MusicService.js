@@ -130,6 +130,20 @@ async function restoreAllStates(client) {
   }
 }
 
+async function searchWithRetry(player, searchOpts, user, retries = 1) {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await player.search(searchOpts, user);
+    } catch (err) {
+      if (i < retries && err.message?.includes("timeout")) {
+        await new Promise((r) => setTimeout(r, 1000));
+        continue;
+      }
+      throw err;
+    }
+  }
+}
+
 async function play(guildId, voiceChannelId, textChannelId, query, user, multi = false) {
   spotifyAbort.set(guildId, true);
   const engine = getEngine(guildId);
@@ -148,7 +162,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     const tracksToSearch = scraped.slice(0, maxTracks);
 
     // Play first track immediately
-    const firstResult = await player.search({ query: `ytsearch:${tracksToSearch[0].query}` }, user);
+    const firstResult = await searchWithRetry(player, { query: `ytsearch:${tracksToSearch[0].query}` }, user);
     if (!firstResult?.tracks?.length) throw new Error("Tidak bisa memutar lagu pertama dari Spotify.");
 
     const allTracks = [firstResult.tracks[0]];
@@ -206,7 +220,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     ? `ytsearch:${query}`
     : query;
 
-  const result = await player.search({ query: searchQuery }, user);
+  const result = await searchWithRetry(player, { query: searchQuery }, user);
   if (!result?.tracks?.length) throw new Error("No results found");
 
   const isPlaylist = result.loadType === "playlist";

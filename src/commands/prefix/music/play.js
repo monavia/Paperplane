@@ -23,10 +23,10 @@ module.exports = {
       await msg.delete().catch(() => {});
 
       if (result.loadType === "playlist") {
-        return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${result.tracks.length} tracks to the queue.`)] });
       }
       if (result?.spotifyTotal) {
-        message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.spotifyTotal} lagu ke antrian...`)] }).catch(() => {});
+        message.channel.send({ embeds: [SuccessEmbed.build(`Added ${result.spotifyTotal} tracks to the queue...`)] }).catch(() => {});
         return;
       }
       if (wasPlaying) {

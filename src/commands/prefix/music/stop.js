@@ -6,11 +6,11 @@ module.exports = {
   name: "stop",
   async execute(message, args) {
     const voice = message.member.voice.channel;
-    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+    if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
 
     const engine = MusicService.getEngine(message.guildId);
     const player = engine?.player;
-    if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+    if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
 
     try {
       const hadTracks = !!(player.playing || player.paused || MusicService.getQueue(message.guildId)?.length);

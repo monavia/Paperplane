@@ -62,17 +62,17 @@ module.exports = {
       if (interpreted.type === "play" && interpreted.query) {
         const voice = message.member.voice.channel;
         if (!voice) {
-          return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+          return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         }
         const msg = await message.channel.send({ embeds: [LoadingEmbed.build("Searching...")] });
         try {
           const { result, track, wasPlaying } = await MusicService.play(message.guildId, voice.id, message.channelId, interpreted.query, message.author);
           await msg.delete().catch(() => {});
           if (result?.loadType === "playlist") {
-            return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+            return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${result.tracks.length} tracks to the queue.`)] });
           }
           if (result?.spotifyTotal) {
-            message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${result.spotifyTotal} lagu ke antrian...`)] }).catch(() => {});
+            message.channel.send({ embeds: [SuccessEmbed.build(`Added ${result.spotifyTotal} tracks to the queue...`)] }).catch(() => {});
           }
           if (wasPlaying || result?.tracks?.length > 1) {
             const title = track?.info?.title || track?.title || track?.name || "lagu";
@@ -91,11 +91,11 @@ module.exports = {
       if (interpreted.type === "playlist" && interpreted.songs?.length) {
         const voice = message.member.voice.channel;
         if (!voice) {
-          return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+          return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         }
         const engine = MusicService.getEngine(message.guildId);
         const player = await engine.join(voice.id, message.channelId);
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal join voice channel.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Failed to join voice channel.")] });
 
         const maxSongs = 50;
         const toSearch = interpreted.songs.slice(0, maxSongs);
@@ -112,7 +112,7 @@ module.exports = {
           }
         }
 
-        if (!found.length) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang ditemukan.")] });
+        if (!found.length) return message.channel.send({ embeds: [ErrorEmbed.build("No tracks found.")] });
 
         if (player.playing || player.paused) {
           engine.queue.addMultiple(found);
@@ -124,24 +124,24 @@ module.exports = {
         }
 
         MusicService.saveState(message.guildId).catch(() => {});
-        return message.channel.send({ embeds: [SuccessEmbed.build(`Menambahkan ${found.length} lagu ke antrian.`)] });
+        return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${found.length} tracks to the queue.`)] });
       }
 
       if (interpreted.type === "skip") {
         Logger.info(`[SKIP-AI] seryn skip triggered by "${message.author.tag}"`);
         const voice = message.member.voice.channel;
-        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         const player = MusicService.getEngine(message.guildId).player;
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
         await MusicService.skip(message.guildId);
         return;
       }
 
       if (interpreted.type === "stop") {
         const voice = message.member.voice.channel;
-        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         const player = MusicService.getEngine(message.guildId).player;
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
         const hadTracks = !!(player.playing || player.paused || MusicService.getQueue(message.guildId)?.length);
         await MusicService.stop(message.guildId);
         if (!hadTracks) {
@@ -152,27 +152,27 @@ module.exports = {
 
       if (interpreted.type === "pause") {
         const voice = message.member.voice.channel;
-        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         const player = MusicService.getEngine(message.guildId).player;
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
         const paused = await MusicService.pause(message.guildId);
-        if (!paused) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal menjeda playback.")] });
-        return message.channel.send({ embeds: [SuccessEmbed.build("Playback dijeda.")] });
+        if (!paused) return message.channel.send({ embeds: [ErrorEmbed.build("Failed to pause playback.")] });
+        return message.channel.send({ embeds: [SuccessEmbed.build("Playback paused.")] });
       }
 
       if (interpreted.type === "resume") {
         const voice = message.member.voice.channel;
-        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
+        if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("You must be in a voice channel.")] });
         const player = MusicService.getEngine(message.guildId).player;
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
         const resumed = await MusicService.resume(message.guildId);
-        if (!resumed) return message.channel.send({ embeds: [ErrorEmbed.build("Gagal melanjutkan playback.")] });
-        return message.channel.send({ embeds: [SuccessEmbed.build("Playback dilanjutkan.")] });
+        if (!resumed) return message.channel.send({ embeds: [ErrorEmbed.build("Failed to resume playback.")] });
+        return message.channel.send({ embeds: [SuccessEmbed.build("Playback resumed.")] });
       }
 
       if (interpreted.type === "autoplay") {
         const engine = MusicService.getEngine(message.guildId);
-        if (!engine) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada player aktif.")] });
+        if (!engine) return message.channel.send({ embeds: [ErrorEmbed.build("No active player.")] });
         engine.playback.autoplay = !engine.playback.autoplay;
         const status = engine.playback.autoplay ? "diaktifkan" : "dinonaktifkan";
         return message.channel.send({ embeds: [SuccessEmbed.build(`Autoplay ${status}.`)] });
@@ -180,14 +180,14 @@ module.exports = {
 
       if (interpreted.type === "shuffle") {
         const tracks = MusicService.getQueue(message.guildId);
-        if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
+        if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Queue is empty.")] });
         await MusicService.shuffle(message.guildId);
-        return message.channel.send({ embeds: [SuccessEmbed.build("Antrian diacak.")] });
+        return message.channel.send({ embeds: [SuccessEmbed.build("Queue shuffled.")] });
       }
 
       if (interpreted.type === "loop") {
         const player = getPlayer(message.guildId);
-        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada player aktif.")] });
+        if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No active player.")] });
         const args = input.split(/\s+/).slice(1);
         const mode = args[0]?.toLowerCase();
         if (!mode || !["none", "track", "queue"].includes(mode)) {
@@ -199,7 +199,7 @@ module.exports = {
 
       if (interpreted.type === "seek") {
         const player = getPlayer(message.guildId);
-        if (!player || !player.queue.current) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang diputar.")] });
+        if (!player || !player.queue.current) return message.channel.send({ embeds: [ErrorEmbed.build("No track is playing.")] });
         const { parseTimestamp, parseDuration } = require("../core/utils/Duration");
         const args = input.split(/\s+/).slice(1);
         const posStr = args.join(" ");
@@ -235,7 +235,7 @@ module.exports = {
 
       if (interpreted.type === "queue") {
         const tracks = MusicService.getQueue(message.guildId);
-        if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Antrian kosong.")] });
+        if (!tracks?.length) return message.channel.send({ embeds: [ErrorEmbed.build("Queue is empty.")] });
         return QueueEmbed.send(message.channel, tracks, message.author.id);
       }
 
@@ -262,7 +262,7 @@ module.exports = {
       if (interpreted.type === "nowplaying") {
         const player = getPlayer(message.guildId);
         const track = player?.queue?.current;
-        if (!track) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
+        if (!track) return message.channel.send({ embeds: [ErrorEmbed.build("No track is currently playing.")] });
         return message.channel.send({ embeds: [NowPlayingEmbed.build(track, player)] });
       }
 
@@ -282,7 +282,7 @@ module.exports = {
                 `\`${prefix}pause\` — Jeda lagu\n` +
                 `\`${prefix}resume\` — Lanjutkan lagu\n` +
                 `\`${prefix}queue\` — Lihat antrian\n` +
-                `\`${prefix}np\` — Lagu yang sedang diputar\n` +
+                `\`${prefix}np\` — Now playing\n` +
                 `\`${prefix}volume <1-100>\` — Atur volume\n` +
                 `\`${prefix}shuffle\` — Acak antrian\n` +
                 `\`${prefix}loop\` — Ulang lagu/antrian\n` +
@@ -344,7 +344,7 @@ module.exports = {
     } catch (err) {
       Logger.error("AI command error:", err.message);
       const isOffline = /fetch\s+failed|ECONNREFUSED|Ollama error/i.test(err.message);
-      message.channel.send({ embeds: [ErrorEmbed.build(isOffline ? "Maaf, AI sedang offline." : "Maaf, terjadi kesalahan.")] }).catch(() => {});
+      message.channel.send({ embeds: [ErrorEmbed.build(isOffline ? "Sorry, AI is offline." : "Sorry, an error occurred.")] }).catch(() => {});
     }
   },
 };

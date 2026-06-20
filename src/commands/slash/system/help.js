@@ -20,7 +20,7 @@ module.exports = {
             "`/pause` — Jeda lagu\n" +
             "`/resume` — Lanjutkan lagu\n" +
             "`/queue` — Lihat antrian\n" +
-            "`/nowplaying` — Lagu sedang diputar\n" +
+            "`/nowplaying` — Now playing\n" +
             "`/volume <1-100>` — Atur volume\n" +
             "`/shuffle` — Acak antrian\n" +
             "`/loop` — Ulang lagu/antrian\n" +

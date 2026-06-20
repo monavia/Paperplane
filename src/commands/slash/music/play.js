@@ -21,9 +21,9 @@ module.exports = {
       const { engine, result, track } = await MusicService.play(interaction.guildId, voice.id, interaction.channelId, query, interaction.user);
 
       if (result.loadType === "playlist") {
-        await interaction.editReply({ embeds: [SuccessEmbed.build(`Menambahkan ${result.tracks.length} lagu ke antrian.`)] });
+        await interaction.editReply({ embeds: [SuccessEmbed.build(`Added ${result.tracks.length} tracks to the queue.`)] });
       } else if (result?.spotifyTotal) {
-        await interaction.editReply({ embeds: [SuccessEmbed.build(`Menambahkan ${result.spotifyTotal} lagu ke antrian...`)] });
+        await interaction.editReply({ embeds: [SuccessEmbed.build(`Added ${result.spotifyTotal} tracks to the queue...`)] });
       } else {
         await interaction.editReply({
           embeds: [NowPlayingEmbed.build(track, engine.player)],

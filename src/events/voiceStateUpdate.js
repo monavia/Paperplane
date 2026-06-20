@@ -18,7 +18,7 @@ module.exports = {
         if (channel) {
           const embed = new EmbedBuilder()
             .setColor(Colors.ERROR)
-            .setDescription("Bot terputus dari voice channel.");
+            .setDescription("Bot disconnected from voice channel.");
           channel.send({ embeds: [embed] }).catch(() => {});
         }
       }

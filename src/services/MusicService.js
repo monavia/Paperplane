@@ -163,7 +163,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
   if (spotifyParsed) {
     const scraped = await spotifyScraper.scrape(query);
-    if (!scraped?.length) throw new Error("Tidak bisa mengambil data dari Spotify.");
+    if (!scraped?.length) throw new Error("Could not fetch data from Spotify.");
 
     const maxTracks = 500;
     const tracksToSearch = scraped.slice(0, maxTracks);
@@ -177,7 +177,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
       if (r.status === "fulfilled" && r.value?.tracks?.length) allTracks.push(r.value.tracks[0]);
     }
 
-    if (!allTracks.length) throw new Error("Tidak ada lagu dari Spotify yang bisa diputar.");
+    if (!allTracks.length) throw new Error("No playable tracks found from Spotify.");
 
     const wasPlaying = player.playing || player.paused;
 

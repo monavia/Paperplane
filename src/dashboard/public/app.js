@@ -126,6 +126,7 @@ function renderPlayer(state) {
   const btnPP = document.getElementById("btn-play-pause");
   const volSlider = document.getElementById("volume-slider");
   const volLabel = document.getElementById("volume-label");
+  const volInput = document.getElementById("volume-input");
 
   if (p && p.nowPlaying) {
     npTitle.innerHTML = `<a href="${p.nowPlaying.uri}" target="_blank">${p.nowPlaying.title}</a>`;
@@ -153,7 +154,7 @@ function renderPlayer(state) {
 
   if (p) {
     volSlider.value = p.volume;
-    volLabel.textContent = p.volume;
+    volInput.value = p.volume;
   }
 
   // Prefix
@@ -227,9 +228,9 @@ document.getElementById("btn-stop").addEventListener("click", async () => {
   }
 });
 
-document.getElementById("volume-slider").addEventListener("input", async (e) => {
-  const vol = e.target.value;
-  document.getElementById("volume-label").textContent = vol;
+// Volume slider
+document.getElementById("volume-slider").addEventListener("input", (e) => {
+  document.getElementById("volume-input").value = e.target.value;
 });
 
 document.getElementById("volume-slider").addEventListener("change", async (e) => {
@@ -238,6 +239,27 @@ document.getElementById("volume-slider").addEventListener("change", async (e) =>
     await api(`/api/player/${selectedGuild}/volume`, {
       method: "POST",
       body: JSON.stringify({ volume: Number(e.target.value) }),
+    });
+  } catch (e) {
+    showToast(e.message);
+  }
+});
+
+// Volume number input
+document.getElementById("volume-input").addEventListener("input", (e) => {
+  let v = Math.min(100, Math.max(1, Number(e.target.value) || 1));
+  document.getElementById("volume-slider").value = v;
+});
+
+document.getElementById("volume-input").addEventListener("change", async (e) => {
+  if (!selectedGuild) return;
+  let v = Math.min(100, Math.max(1, Number(e.target.value) || 1));
+  e.target.value = v;
+  document.getElementById("volume-slider").value = v;
+  try {
+    await api(`/api/player/${selectedGuild}/volume`, {
+      method: "POST",
+      body: JSON.stringify({ volume: v }),
     });
   } catch (e) {
     showToast(e.message);
@@ -280,11 +302,60 @@ function fmtDurationShort(ms) {
   const m = Math.floor((total % 3600) / 60);
   const s = total % 60;
   const parts = [];
-  if (d > 0) parts.push(`${d} day${d > 1 ? "s" : ""}`);
-  if (h > 0) parts.push(`${h} hour${h > 1 ? "s" : ""}`);
-  if (m > 0) parts.push(`${m} minute${m > 1 ? "s" : ""}`);
-  if (s > 0 && !d) parts.push(`${s} second${s > 1 ? "s" : ""}`);
+  if (d > 0) parts.push(`${d}d`);
+  if (h > 0) parts.push(`${h}h`);
+  if (m > 0) parts.push(`${m}m`);
+  if (s > 0 && !d) parts.push(`${s}s`);
   return parts.join(" ") || "0s";
+}
+
+let charts = { sources: null, tracks: null, users: null, commands: null };
+
+function destroyCharts() {
+  Object.values(charts).forEach(c => { if (c) { c.destroy(); } });
+  charts = { sources: null, tracks: null, users: null, commands: null };
+}
+
+const CHART_COLORS = ["#e94560","#5865f2","#43b581","#faa61a","#9b59b6"];
+
+function makeBarChart(ctxId, labels, values, color) {
+  const ctx = document.getElementById(ctxId);
+  if (!ctx) return null;
+  return new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data: values,
+        backgroundColor: color + "33",
+        borderColor: color,
+        borderWidth: 2,
+        borderRadius: 4,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#16213e",
+          titleColor: "#eee",
+          bodyColor: "#aaa",
+          borderColor: "#0f3460",
+          borderWidth: 1,
+        },
+      },
+      scales: {
+        x: { display: false },
+        y: {
+          display: false,
+          beginAtZero: true,
+          grid: { display: false },
+        },
+      },
+    },
+  });
 }
 
 async function loadStats(days) {
@@ -297,83 +368,67 @@ async function loadStats(days) {
   }
 }
 
-function renderStats(data) {
-  // Sources
-  const sourcesEl = document.getElementById("stats-sources");
-  const sourcesCard = document.getElementById("stats-overview");
-  if (data.sourceBreakdown.length) {
-    sourcesCard.classList.remove("hidden");
-    const total = data.sourceBreakdown.reduce((s, x) => s + x.count, 0);
-    sourcesEl.innerHTML = data.sourceBreakdown
-      .map((s) => {
-        const pct = ((s.count / total) * 100).toFixed(1);
-        return `<div class="source-row"><span class="source-name">${capitalize(s.source)}</span><span class="source-count">${s.count} (${pct}%)</span></div>`;
-      })
-      .join("");
-  } else {
-    sourcesCard.classList.add("hidden");
-  }
-
-  // Tracks
-  const tracksEl = document.getElementById("stats-tracks-list");
-  const tracksCard = document.getElementById("stats-toptracks");
-  if (data.topTracks.length) {
-    tracksCard.classList.remove("hidden");
-    tracksEl.innerHTML = data.topTracks
-      .map(
-        (t, i) =>
-          `<div class="stat-row">
-            <span class="stat-rank">${i + 1}</span>
-            <span class="stat-title">${capitalize(t.source)} ${t.title}</span>
-            <span class="stat-value">${fmtDurationShort(t.totalPlayedMs)}</span>
-          </div>`
-      )
-      .join("");
-  } else {
-    tracksCard.classList.add("hidden");
-  }
-
-  // Users
-  const usersEl = document.getElementById("stats-users-list");
-  const usersCard = document.getElementById("stats-topusers");
-  if (data.topUsers.length) {
-    usersCard.classList.remove("hidden");
-    usersEl.innerHTML = data.topUsers
-      .map(
-        (u, i) =>
-          `<div class="stat-row">
-            <span class="stat-rank">${i + 1}</span>
-            <span class="stat-title">${u.username}</span>
-            <span class="stat-value">${fmtDurationShort(u.totalPlayedMs)}</span>
-          </div>`
-      )
-      .join("");
-  } else {
-    usersCard.classList.add("hidden");
-  }
-
-  // Commands
-  const cmdsEl = document.getElementById("stats-commands-list");
-  const cmdsCard = document.getElementById("stats-topcommands");
-  if (data.topCommands.length) {
-    cmdsCard.classList.remove("hidden");
-    cmdsEl.innerHTML = data.topCommands
-      .map(
-        (c, i) =>
-          `<div class="stat-row">
-            <span class="stat-rank">${i + 1}</span>
-            <span class="stat-title">${c.command}</span>
-            <span class="stat-value">${c.count}</span>
-          </div>`
-      )
-      .join("");
-  } else {
-    cmdsCard.classList.add("hidden");
-  }
-}
-
 function capitalize(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function renderList(elId, items, fmt) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  if (!items.length) {
+    el.innerHTML = '<div class="stat-empty">No data</div>';
+    return;
+  }
+  el.innerHTML = items.map((item, i) => {
+    const val = fmt ? fmt(item) : item.count;
+    const label = item.title || item.username || item.command || item.source;
+    return `<div class="stat-row"><span class="stat-rank">${i + 1}</span><span class="stat-title">${label}</span><span class="stat-value">${val}</span></div>`;
+  }).join("");
+}
+
+function renderStats(data) {
+  destroyCharts();
+
+  // Sources — bar chart + list
+  if (data.sourceBreakdown.length) {
+    const labels = data.sourceBreakdown.map(s => capitalize(s.source));
+    const values = data.sourceBreakdown.map(s => s.count);
+    makeBarChart("chart-sources", labels, values, CHART_COLORS[0]);
+    const total = values.reduce((a, b) => a + b, 0);
+    renderList("stats-sources-list", data.sourceBreakdown, item => `${item.count} (${((item.count / total) * 100).toFixed(1)}%)`);
+  } else {
+    renderList("stats-sources-list", []);
+  }
+
+  // Tracks — bar chart + list
+  if (data.topTracks.length) {
+    const labels = data.topTracks.map(t => t.title.length > 22 ? t.title.slice(0, 20) + "..." : t.title);
+    const values = data.topTracks.map(t => Math.round(t.totalPlayedMs / 1000));
+    makeBarChart("chart-tracks", labels, values, CHART_COLORS[1]);
+    renderList("stats-tracks-list", data.topTracks, item => fmtDurationShort(item.totalPlayedMs));
+  } else {
+    renderList("stats-tracks-list", []);
+  }
+
+  // Users — bar chart + list
+  if (data.topUsers.length) {
+    const labels = data.topUsers.map(u => u.username);
+    const values = data.topUsers.map(u => Math.round(u.totalPlayedMs / 1000));
+    makeBarChart("chart-users", labels, values, CHART_COLORS[2]);
+    renderList("stats-users-list", data.topUsers, item => fmtDurationShort(item.totalPlayedMs));
+  } else {
+    renderList("stats-users-list", []);
+  }
+
+  // Commands — bar chart + list
+  if (data.topCommands.length) {
+    const labels = data.topCommands.map(c => c.command);
+    const values = data.topCommands.map(c => c.count);
+    makeBarChart("chart-commands", labels, values, CHART_COLORS[3]);
+    renderList("stats-commands-list", data.topCommands, item => item.count);
+  } else {
+    renderList("stats-commands-list", []);
+  }
 }
 
 // Tab switching
@@ -401,3 +456,7 @@ document.getElementById("stats-days").addEventListener("change", (e) => {
 });
 
 init();
+//======================
+// Created by monavia
+// Don't change if you don't know
+//======================

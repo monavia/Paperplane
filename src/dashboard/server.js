@@ -11,15 +11,30 @@ const SESSION_SECRET = process.env.SESSION_SECRET || "paperplane-dashboard-secre
 function start(client) {
   const app = express();
 
-  app.use(express.json());
-  app.use(express.static(path.join(__dirname, "public")));
-
   app.use(session({
     secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 7 * 24 * 60 * 60 * 1000 },
   }));
+
+  app.use(express.json());
+
+  // Static files (must come after session for /api/* to work without static lookup)
+  app.use(express.static(path.join(__dirname, "public")));
+
+  // Page routes
+  app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "index.html"));
+  });
+
+  app.get("/dashboard", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "dashboard.html"));
+  });
+
+  app.get("/commands", (req, res) => {
+    res.sendFile(path.join(__dirname, "public", "commands.html"));
+  });
 
   app.get("/auth/login", (req, res) => {
     res.redirect(auth.getAuthUrl());
@@ -34,7 +49,7 @@ function start(client) {
       const tokens = await auth.exchangeCode(code);
       req.session.accessToken = tokens.access_token;
       req.session.refreshToken = tokens.refresh_token;
-      res.redirect("/");
+      res.redirect("/dashboard");
     } catch (err) {
       Logger.error("OAuth2 callback error:", err.message);
       res.redirect("/?error=auth_failed");

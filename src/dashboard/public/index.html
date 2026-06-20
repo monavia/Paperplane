@@ -3,119 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Paperplane Dashboard</title>
-  <link rel="stylesheet" href="/style.css">
+  <title>Paperplane - Premium Discord Music Bot</title>
+  <link rel="stylesheet" href="/landing.css">
 </head>
 <body>
-  <nav>
-    <div class="nav-brand">Paperplane</div>
-    <div id="nav-user"></div>
+  <div class="bg-pattern"></div>
+
+  <nav class="landing-nav">
+    <div class="nav-inner">
+      <div class="nav-brand">Paperplane</div>
+      <div class="nav-links">
+        <a href="/commands">Commands</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="https://discord.gg/invite" target="_blank" class="nav-support">Support</a>
+      </div>
+      <a href="https://discord.com/oauth2/authorize?client_id=957823446564352080" class="btn-nav-invite" target="_blank">Invite</a>
+    </div>
   </nav>
 
-  <main>
-    <div id="login-screen" class="screen hidden">
-      <div class="card">
-        <h1>Paperplane Dashboard</h1>
-        <p>Login with your Discord account to manage the music bot.</p>
-        <a href="/auth/login" class="btn btn-discord">Login with Discord</a>
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-icon">📻</div>
+      <h1>Paperplane</h1>
+      <p class="hero-tagline">1 in 4 Discord Music Bot</p>
+      <p class="hero-desc">High-quality music playback powered by Lavalink. Stream from YouTube, Spotify, and more with seamless multi-node failover.</p>
+      <div class="hero-actions">
+        <a href="https://discord.com/oauth2/authorize?client_id=957823446564352080" class="btn-hero" target="_blank">Invite Now</a>
+        <a href="/dashboard" class="btn-hero-secondary">Dashboard</a>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span>4</span> Lavalink Nodes</div>
+        <div class="hero-stat"><span>500</span> Max Queue</div>
+        <div class="hero-stat"><span>24/7</span> Uptime</div>
       </div>
     </div>
+  </section>
 
-    <div id="dashboard-screen" class="screen hidden">
-      <aside id="guild-list">
-        <h3>Servers</h3>
-        <div id="guilds"></div>
-      </aside>
-
-      <section id="player-panel">
-        <div id="no-guild-selected" class="placeholder">
-          <p>Select a server to manage music playback.</p>
-        </div>
-
-        <div id="tabs" class="hidden">
-          <button class="tab-btn active" data-tab="player">Player</button>
-          <button class="tab-btn" data-tab="stats">Statistics</button>
-        </div>
-
-        <div id="player-content" class="hidden">
-            <div id="np-thumbnail"></div>
-            <div id="np-info">
-              <div id="np-title"></div>
-              <div id="np-author"></div>
-              <div id="np-progress">
-                <div id="np-progress-bar"><div id="np-progress-fill"></div></div>
-                <span id="np-time"></span>
-              </div>
-            </div>
-          </div>
-
-          <div id="controls">
-            <button id="btn-play-pause" class="ctrl-btn" title="Play/Pause">⏸</button>
-            <button id="btn-skip" class="ctrl-btn" title="Skip">⏭</button>
-            <button id="btn-stop" class="ctrl-btn" title="Stop">⏹</button>
-            <div id="volume-group">
-              <label>Vol</label>
-              <input type="range" id="volume-slider" min="1" max="100" value="80">
-              <span id="volume-label">80</span>
-            </div>
-          </div>
-
-          <div id="settings-section">
-            <h3>Settings</h3>
-            <div class="setting-row">
-              <label for="prefix-input">Prefix</label>
-              <div class="setting-control">
-                <input type="text" id="prefix-input" maxlength="3" class="input-sm">
-                <button id="btn-save-prefix" class="btn btn-sm">Save</button>
-              </div>
-            </div>
-          </div>
-
-          <div id="queue-section">
-            <h3>Queue</h3>
-            <div id="queue-list"></div>
-            <div id="queue-pagination" class="hidden">
-              <button id="btn-queue-prev" class="page-btn">‹ Prev</button>
-              <span id="queue-page-info"></span>
-              <button id="btn-queue-next" class="page-btn">Next ›</button>
-            </div>
-          </div>
-        </div>
-
-        <div id="stats-content" class="hidden">
-          <div id="stats-header">
-            <h2>Statistics</h2>
-            <select id="stats-days">
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-            </select>
-          </div>
-
-          <div id="stats-overview" class="stats-card">
-            <div class="stat-box"><span class="stat-label">Track types</span><div id="stats-sources"></div></div>
-          </div>
-
-          <div id="stats-toptracks" class="stats-card">
-            <h3>Most time played</h3>
-            <div id="stats-tracks-list"></div>
-          </div>
-
-          <div id="stats-topusers" class="stats-card">
-            <h3>Most time listened</h3>
-            <div id="stats-users-list"></div>
-          </div>
-
-          <div id="stats-topcommands" class="stats-card">
-            <h3>Top commands</h3>
-            <div id="stats-commands-list"></div>
-          </div>
-        </div>
-      </section>
+  <section class="features">
+    <h2>Why Paperplane?</h2>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🎵</div>
+        <h3>High Quality Audio</h3>
+        <p>Powered by Lavalink for crystal clear music playback with support for multiple sources.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Multi-Node Failover</h3>
+        <p>4 dedicated Lavalink nodes with automatic failover — when one goes down, the next takes over.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Web Dashboard</h3>
+        <p>Full-featured dashboard with player controls, queue management, and detailed statistics.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎯</div>
+        <h3>Spotify Support</h3>
+        <p>Play tracks, playlists, and albums from Spotify directly in your Discord server.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <h3>Autoplay</h3>
+        <p>Intelligent recommendations keep the music going when your queue runs out.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📈</div>
+        <h3>Track Statistics</h3>
+        <p>Detailed analytics on what's being played, by whom, and how often.</p>
+      </div>
     </div>
-  </main>
+  </section>
 
-  <div id="toast" class="hidden"></div>
-  <script src="/app.js"></script>
+  <section class="commands-preview">
+    <h2>Command Categories</h2>
+    <div class="cmd-categories">
+      <div class="cmd-cat">
+        <h3>🎵 Music</h3>
+        <p><code>play</code>, <code>skip</code>, <code>stop</code>, <code>pause</code>, <code>resume</code>, <code>queue</code>, <code>volume</code>, <code>autoplay</code></p>
+      </div>
+      <div class="cmd-cat">
+        <h3>⚙️ System</h3>
+        <p><code>prefix</code>, <code>ping</code>, <code>help</code>, <code>uptime</code>, <code>stats</code></p>
+      </div>
+    </div>
+    <a href="/commands" class="btn-cmd-view">View All Commands →</a>
+  </section>
+
+  <section class="dashboard-preview">
+    <h2>Full Web Dashboard</h2>
+    <p>Manage your music player in real-time with our interactive web dashboard.</p>
+    <div class="dash-features">
+      <div class="dash-feature">
+        <span>▶️</span> Real-time player controls (play, pause, skip, stop)
+      </div>
+      <div class="dash-feature">
+        <span>📋</span> Queue management with pagination
+      </div>
+      <div class="dash-feature">
+        <span>🔊</span> Volume control
+      </div>
+      <div class="dash-feature">
+        <span>📊</span> Server statistics and analytics
+      </div>
+      <div class="dash-feature">
+        <span>⚙️</span> Prefix configuration
+      </div>
+    </div>
+    <a href="/dashboard" class="btn-dash-open">Open Dashboard →</a>
+  </section>
+
+  <section class="colors-section">
+    <h2>Choose Your Experience</h2>
+    <p>Paperplane fits right into your server with a clean, modern interface.</p>
+    <div class="color-swatches">
+      <div class="color-swatch" style="background:#e94560"></div>
+      <div class="color-swatch" style="background:#5865f2"></div>
+      <div class="color-swatch" style="background:#43b581"></div>
+      <div class="color-swatch" style="background:#faa61a"></div>
+      <div class="color-swatch" style="background:#9b59b6"></div>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">Paperplane</div>
+      <div class="footer-links">
+        <a href="/commands">Commands</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="https://discord.gg/invite" target="_blank">Support</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 Paperplane. All rights reserved.</div>
+    </div>
+  </footer>
 </body>
 </html>
+<!--======================
+// Created by monavia
+// Don't change if you don't know
+//======================-->

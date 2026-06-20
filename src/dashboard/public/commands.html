@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Paperplane Commands</title>
+  <link rel="stylesheet" href="/landing.css">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+
+  <nav class="landing-nav">
+    <div class="nav-inner">
+      <div class="nav-brand">Paperplane</div>
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/commands">Commands</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="https://discord.gg/invite" target="_blank" class="nav-support">Support</a>
+      </div>
+      <a href="https://discord.com/oauth2/authorize?client_id=957823446564352080" class="btn-nav-invite" target="_blank">Invite</a>
+    </div>
+  </nav>
+
+  <section class="cmds-page">
+    <h1>Commands</h1>
+    <p class="cmds-subtitle">All available commands for Paperplane music bot</p>
+
+    <div class="cmds-search">
+      <input type="text" id="cmd-search" placeholder="Search commands..." oninput="filterCommands()">
+    </div>
+
+    <div class="cmds-category">
+      <h2 class="cat-header">🎵 Music</h2>
+      <div class="cmd-list">
+        <div class="cmd-card">
+          <div class="cmd-name"><code>play</code> <span class="cmd-aliases">&lt;query|url&gt;</span></div>
+          <div class="cmd-desc">Play a song from YouTube, Spotify, or supported source</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>skip</code></div>
+          <div class="cmd-desc">Skip the currently playing track</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>stop</code></div>
+          <div class="cmd-desc">Stop playback and clear the queue</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>pause</code></div>
+          <div class="cmd-desc">Pause the current track</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>resume</code></div>
+          <div class="cmd-desc">Resume paused playback</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>queue</code></div>
+          <div class="cmd-desc">Display the current song queue</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>volume</code> <span class="cmd-aliases">&lt;1-100&gt;</span></div>
+          <div class="cmd-desc">Set or view the playback volume</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>autoplay</code></div>
+          <div class="cmd-desc">Toggle automatic song recommendations when queue ends</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>nowplaying</code> <span class="cmd-aliases">np</span></div>
+          <div class="cmd-desc">Show information about the current track</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cmds-category">
+      <h2 class="cat-header">⚙️ System</h2>
+      <div class="cmd-list">
+        <div class="cmd-card">
+          <div class="cmd-name"><code>prefix</code> <span class="cmd-aliases">[new_prefix]</span></div>
+          <div class="cmd-desc">View or change the bot's command prefix</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>ping</code></div>
+          <div class="cmd-desc">Check the bot's latency</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>help</code></div>
+          <div class="cmd-desc">Display the help menu</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>uptime</code></div>
+          <div class="cmd-desc">Show how long the bot has been online</div>
+        </div>
+        <div class="cmd-card">
+          <div class="cmd-name"><code>stats</code></div>
+          <div class="cmd-desc">Display bot statistics and information</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="landing-footer">
+    <div class="footer-inner">
+      <div class="footer-brand">Paperplane</div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/dashboard">Dashboard</a>
+        <a href="https://discord.gg/invite" target="_blank">Support</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 Paperplane. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    function filterCommands() {
+      const q = document.getElementById('cmd-search').value.toLowerCase();
+      document.querySelectorAll('.cmd-card').forEach(card => {
+        const name = card.querySelector('.cmd-name').textContent.toLowerCase();
+        const desc = card.querySelector('.cmd-desc').textContent.toLowerCase();
+        card.style.display = name.includes(q) || desc.includes(q) ? '' : 'none';
+      });
+    }
+  </script>
+</body>
+</html>
+<!--======================
+// Created by monavia
+// Don't change if you don't know
+//======================-->

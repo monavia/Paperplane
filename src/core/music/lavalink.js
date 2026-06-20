@@ -186,7 +186,8 @@ function getNextAvailableNode(failedNodeName) {
       return cfg.name;
     }
   }
-  return null;
+  // No connected nodes — let Lavalink auto-select
+  return undefined;
 }
 
 async function handleNodeFailover(nodeName) {

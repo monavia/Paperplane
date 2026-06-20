@@ -1,7 +1,7 @@
 require("dotenv/config");
 
 const NODE_NAMES = ["main", "backup", "node3", "node4"];
-const DEFAULT_PORTS = [2333, 2334, 2335, 2336];
+const DEFAULT_PORTS = [2323, 2324, 2325, 2326];
 
 function readNodeEnv(i) {
   const sfx = i === 0 ? "" : `_${i + 1}`;

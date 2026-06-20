@@ -35,6 +35,8 @@ module.exports = {
 
       try {
         await command.execute(message, args);
+        const { recordCommandUsage } = require("../services/StatsService");
+        recordCommandUsage(message.guildId, commandName, message.author.id);
       } catch (err) {
         Logger.error(`Prefix error (${commandName}):`, err.message);
         await message.reply({ embeds: [ErrorEmbed.build("An error occurred while executing that command.")] }).catch(() => {});

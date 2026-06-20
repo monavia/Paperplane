@@ -6,6 +6,7 @@ const Colors = require("../constants/Colors");
 
 const disconnectTimers = new Map();
 const errorTimestamps = new Map(); // guildId -> [timestamp] (for cascade throttle)
+const trackStartTimes = new Map(); // guildId -> { track, startedAt }
 
 function register(client) {
   const l = lavalink.get();
@@ -13,6 +14,7 @@ function register(client) {
 
   l.on("trackStart", (player, track) => {
     state.nowPlaying.set(player.guildId, track);
+    trackStartTimes.set(player.guildId, { track, startedAt: Date.now() });
     Logger.debug(`Track started in ${player.guildId}: ${track.info.title}`);
 
     // Cancel pending disconnect timer
@@ -47,6 +49,16 @@ function register(client) {
 
   l.on("trackEnd", (player, track, reason) => {
     Logger.info(`[trackEnd] guild=${player.guildId} reason=${typeof reason === 'object' ? reason?.reason : reason} title=${track?.info?.title?.substring(0,30) || "null"}`);
+
+    // Record track play for stats
+    const startInfo = trackStartTimes.get(player.guildId);
+    if (startInfo) {
+      const playedMs = Date.now() - startInfo.startedAt;
+      const { recordTrackPlay } = require("../services/StatsService");
+      recordTrackPlay(player.guildId, startInfo.track, Math.min(playedMs, track?.info?.duration || playedMs));
+      trackStartTimes.delete(player.guildId);
+    }
+
     // Don't delete nowPlaying here — queueEnd will handle it;
     // keeps nowPlaying available during the trackEnd→queueEnd gap (prevents race with -np)
     lavalink.stopPositionTracking(player.guildId);
@@ -96,7 +108,26 @@ function register(client) {
       return;
     }
 
-    // Queue is empty — start 3-minute disconnect timer
+    // Queue is empty — try autoplay before disconnecting
+    try {
+      const { getEngine } = require("../services/MusicService");
+      const engine = getEngine(player.guildId);
+      if (engine?.playback?.autoplay) {
+        const AutoplayEngine = require("./AutoplayEngine");
+        const autoplay = new AutoplayEngine();
+        const autoTrack = await autoplay.getNextTrack(player, track);
+        if (autoTrack) {
+          state.nowPlaying.set(player.guildId, autoTrack);
+          player.play({ track: autoTrack, clientTrack: autoTrack }).catch(err => {
+            Logger.error(`Autoplay playback failed: ${err.message}`);
+          });
+          return;
+        }
+      }
+    } catch (err) {
+      Logger.error(`Autoplay error for ${player.guildId}:`, err.message);
+    }
+
     state.nowPlaying.delete(player.guildId);
 
     const timerId = setTimeout(() => {
@@ -137,6 +168,7 @@ function register(client) {
     state.queues.clear(player.guildId);
     lavalink.stopPositionTracking(player.guildId);
     lavalink.uncachePlayer(player.guildId);
+    trackStartTimes.delete(player.guildId);
     const timer = disconnectTimers.get(player.guildId);
     if (timer) {
       clearTimeout(timer);

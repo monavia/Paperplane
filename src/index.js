@@ -61,6 +61,11 @@ client.once("clientReady", async () => {
   const commandsData = getSlashData(client);
   await deploy(commandsData);
 
+  if (process.env.DASHBOARD_ENABLED === "true") {
+    const { start: startDashboard } = require("./dashboard/server");
+    startDashboard(client);
+  }
+
   Logger.ready("Paperplane is ready");
 
   client.user.setPresence({

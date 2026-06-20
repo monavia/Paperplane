@@ -10,6 +10,8 @@ module.exports = {
       if (!command) return;
       try {
         await command.execute(interaction);
+        const { recordCommandUsage } = require("../services/StatsService");
+        recordCommandUsage(interaction.guildId, `/${interaction.commandName}`, interaction.user.id);
       } catch (err) {
         Logger.error(`Slash error (/${interaction.commandName}):`, err.message);
         const reply = { embeds: [ErrorEmbed.build("An error occurred.")], ephemeral: true };

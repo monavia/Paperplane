@@ -1,0 +1,117 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; }
+
+nav { background: #16213e; padding: 12px 24px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0f3460; }
+.nav-brand { font-size: 1.3em; font-weight: 700; color: #e94560; }
+#nav-user { display: flex; align-items: center; gap: 12px; font-size: 0.9em; color: #aaa; }
+.btn-logout { color: #e94560; text-decoration: none; font-size: 0.85em; font-weight: 600; }
+.btn-logout:hover { text-decoration: underline; }
+
+.hidden { display: none !important; }
+
+.screen { display: flex; min-height: calc(100vh - 52px); }
+
+.card { background: #16213e; border-radius: 12px; padding: 40px; text-align: center; max-width: 400px; margin: auto; }
+.card h1 { margin-bottom: 12px; color: #e94560; }
+.card p { margin-bottom: 24px; color: #aaa; }
+
+.btn { display: inline-block; padding: 10px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; cursor: pointer; border: none; font-size: 1em; }
+.btn-discord { background: #5865f2; color: #fff; }
+.btn-discord:hover { background: #4752c4; }
+
+#login-screen { align-items: center; justify-content: center; }
+
+#dashboard-screen { }
+
+#guild-list { width: 260px; min-width: 260px; background: #16213e; padding: 16px; border-right: 1px solid #0f3460; overflow-y: auto; }
+#guild-list h3 { margin-bottom: 12px; color: #888; text-transform: uppercase; font-size: 0.8em; letter-spacing: 1px; }
+.guild-item { padding: 10px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; display: flex; align-items: center; gap: 10px; transition: background 0.2s; }
+.guild-item:hover { background: #0f3460; }
+.guild-item.active { background: #0f3460; border-left: 3px solid #e94560; }
+.guild-icon { width: 32px; height: 32px; border-radius: 50%; background: #0f3460; flex-shrink: 0; overflow: hidden; }
+.guild-icon img { width: 100%; height: 100%; object-fit: cover; }
+.guild-name { font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+#player-panel { flex: 1; padding: 24px; overflow-y: auto; }
+.placeholder { display: flex; align-items: center; justify-content: center; height: 100%; color: #666; font-size: 1.1em; }
+
+#player-content { max-width: 700px; margin: 0 auto; }
+
+#now-playing { background: #16213e; border-radius: 12px; padding: 20px; display: flex; gap: 16px; margin-bottom: 16px; align-items: center; }
+#np-thumbnail { width: 80px; height: 80px; border-radius: 8px; background: #0f3460; flex-shrink: 0; }
+#np-thumbnail img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+#np-info { flex: 1; min-width: 0; }
+#np-title { font-size: 1.1em; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#np-title a { color: #eee; text-decoration: none; }
+#np-title a:hover { color: #e94560; }
+#np-author { color: #888; font-size: 0.85em; margin-top: 4px; }
+#np-progress { margin-top: 10px; display: flex; align-items: center; gap: 10px; }
+#np-progress-bar { flex: 1; height: 4px; background: #0f3460; border-radius: 2px; overflow: hidden; }
+#np-progress-fill { height: 100%; background: #e94560; border-radius: 2px; transition: width 1s linear; width: 0%; }
+#np-time { font-size: 0.8em; color: #888; white-space: nowrap; }
+
+#controls { background: #16213e; border-radius: 12px; padding: 16px 20px; display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.ctrl-btn { background: #0f3460; border: none; color: #eee; width: 42px; height: 42px; border-radius: 50%; font-size: 1.1em; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; justify-content: center; }
+.ctrl-btn:hover { background: #e94560; }
+.ctrl-btn:disabled { opacity: 0.4; cursor: default; }
+.ctrl-btn:disabled:hover { background: #0f3460; }
+
+#volume-group { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+#volume-group label { color: #888; font-size: 0.8em; }
+#volume-slider { width: 80px; accent-color: #e94560; }
+#volume-label { color: #eee; font-size: 0.85em; min-width: 28px; text-align: right; }
+
+#queue-section { background: #16213e; border-radius: 12px; padding: 16px 20px; }
+#queue-section h3 { color: #888; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.queue-empty { color: #666; font-style: italic; font-size: 0.9em; }
+.queue-item { padding: 8px 0; border-bottom: 1px solid #0f3460; display: flex; justify-content: space-between; align-items: center; }
+.queue-item:last-child { border-bottom: none; }
+.queue-title { font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.queue-duration { color: #888; font-size: 0.8em; flex-shrink: 0; margin-left: 12px; }
+
+#tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+.tab-btn { background: #16213e; border: none; color: #888; padding: 10px 20px; border-radius: 8px 8px 0 0; cursor: pointer; font-size: 0.9em; font-weight: 600; transition: background 0.2s, color 0.2s; }
+.tab-btn:hover { background: #1a2a4a; color: #eee; }
+.tab-btn.active { background: #16213e; color: #e94560; border-bottom: 2px solid #e94560; }
+
+#stats-content { max-width: 700px; margin: 0 auto; }
+#stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+#stats-header h2 { color: #eee; font-size: 1.2em; }
+#stats-header select { background: #16213e; border: 1px solid #0f3460; color: #eee; padding: 6px 12px; border-radius: 6px; font-size: 0.85em; cursor: pointer; }
+
+.stats-card { background: #16213e; border-radius: 12px; padding: 16px 20px; margin-bottom: 12px; }
+.stats-card h3 { color: #888; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+
+.stat-box { }
+.stat-box .stat-label { color: #888; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: block; }
+
+.stat-row { display: flex; align-items: center; padding: 8px 0; border-bottom: 1px solid #0f3460; gap: 10px; }
+.stat-row:last-child { border-bottom: none; }
+.stat-rank { color: #555; font-size: 0.85em; width: 24px; flex-shrink: 0; text-align: right; }
+.stat-title { flex: 1; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stat-value { color: #e94560; font-size: 0.85em; flex-shrink: 0; font-weight: 600; }
+.stat-empty { color: #666; font-style: italic; font-size: 0.9em; }
+
+.source-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #0f3460; }
+.source-row:last-child { border-bottom: none; }
+.source-name { font-size: 0.9em; color: #eee; }
+.source-count { font-size: 0.85em; color: #888; }
+
+#settings-section { background: #16213e; border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; }
+#settings-section h3 { color: #888; font-size: 0.8em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
+.setting-row { display: flex; align-items: center; justify-content: space-between; }
+.setting-row label { color: #aaa; font-size: 0.9em; }
+.setting-control { display: flex; align-items: center; gap: 8px; }
+.input-sm { background: #0f3460; border: 1px solid #1a4a7a; border-radius: 6px; color: #eee; padding: 6px 10px; font-size: 0.9em; width: 60px; text-align: center; }
+.input-sm:focus { outline: none; border-color: #e94560; }
+.btn-sm { background: #e94560; color: #fff; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.85em; cursor: pointer; font-weight: 600; }
+.btn-sm:hover { background: #d63851; }
+
+#queue-pagination { display: flex; justify-content: center; align-items: center; gap: 12px; margin-top: 10px; padding-top: 10px; border-top: 1px solid #0f3460; }
+.page-btn { background: #0f3460; color: #eee; border: none; border-radius: 6px; padding: 6px 14px; font-size: 0.85em; cursor: pointer; font-weight: 600; }
+.page-btn:hover { background: #1a4a7a; }
+.page-btn:disabled { opacity: 0.4; cursor: default; }
+#queue-page-info { color: #888; font-size: 0.85em; }
+
+#toast { position: fixed; bottom: 24px; right: 24px; background: #e94560; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.9em; z-index: 999; animation: fadeIn 0.3s; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }

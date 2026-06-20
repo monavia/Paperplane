@@ -15,19 +15,15 @@ module.exports = {
     const player = MusicService.getEngine(interaction.guildId).player;
     if (!player) return interaction.reply({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")], ephemeral: true });
 
-    const wasPlaying = player.playing || player.paused;
-
     try {
-      if (wasPlaying) {
-        await interaction.deferReply();
-      }
-
+      const hadTracks = !!(player.playing || player.paused || MusicService.getQueue(interaction.guildId)?.length);
+      await interaction.deferReply();
       await MusicService.stop(interaction.guildId);
 
-      if (!wasPlaying) {
-        await interaction.reply({ embeds: [SuccessEmbed.build("Stopped.")] });
+      if (!hadTracks) {
+        await interaction.editReply({ embeds: [SuccessEmbed.build("Queue empty.")] });
       } else {
-        await interaction.deleteReply().catch(() => {});
+        await interaction.editReply({ embeds: [SuccessEmbed.build("Thank you for using our service!")] });
       }
     } catch (err) {
       if (interaction.deferred) {

@@ -98,15 +98,6 @@ function register(client) {
 
     // Queue is empty — start 3-minute disconnect timer
     state.nowPlaying.delete(player.guildId);
-    if (player.textChannelId) {
-      const channel = client.channels.cache.get(player.textChannelId);
-      if (channel) {
-        const embed = new EmbedBuilder()
-          .setDescription("Stopped.")
-          .setColor(Colors.WARNING);
-        channel.send({ embeds: [embed] }).catch(() => {});
-      }
-    }
 
     const timerId = setTimeout(() => {
       player.disconnect();

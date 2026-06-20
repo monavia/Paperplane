@@ -3,7 +3,6 @@ const Logger = require("../core/utils/Logger");
 const PlayerState = require("../database/models/PlayerState");
 
 const engines = new Map();
-const spotifyAbort = new Map();
 
 function getEngine(guildId) {
   if (!engines.has(guildId)) engines.set(guildId, new MusicEngine(guildId));
@@ -131,10 +130,18 @@ async function restoreAllStates(client) {
 }
 
 async function searchWithRetry(player, searchOpts, user, retries = 1) {
+  const query = searchOpts.query || searchOpts;
+  const nodeName = player.node?.name || "unknown";
+  const start = Date.now();
+  Logger.debug(`[SEARCH] node=${nodeName} query="${query?.slice(0, 80)}" attempt=1`);
+
   for (let i = 0; i <= retries; i++) {
     try {
-      return await player.search(searchOpts, user);
+      const result = await player.search(searchOpts, user);
+      Logger.debug(`[SEARCH] node=${nodeName} query="${query?.slice(0, 80)}" ok ms=${Date.now() - start} tracks=${result?.tracks?.length || 0}`);
+      return result;
     } catch (err) {
+      Logger.debug(`[SEARCH] node=${nodeName} query="${query?.slice(0, 80)}" fail ms=${Date.now() - start} err="${err.message}"`);
       if (i < retries && err.message?.includes("timeout")) {
         await new Promise((r) => setTimeout(r, 1000));
         continue;
@@ -145,10 +152,10 @@ async function searchWithRetry(player, searchOpts, user, retries = 1) {
 }
 
 async function play(guildId, voiceChannelId, textChannelId, query, user, multi = false) {
-  spotifyAbort.set(guildId, true);
   const engine = getEngine(guildId);
   const player = await engine.join(voiceChannelId, textChannelId);
   if (!player) throw new Error("Failed to create player");
+  Logger.debug(`[PLAY] guild=${guildId} node=${player.node?.name || "none"} query="${(query || "").slice(0, 80)}"`);
 
   // Intercept Spotify URLs — scrape HTML + search on YouTube
   const spotifyScraper = require("../core/music/SpotifyScraper");
@@ -158,14 +165,19 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     const scraped = await spotifyScraper.scrape(query);
     if (!scraped?.length) throw new Error("Tidak bisa mengambil data dari Spotify.");
 
-    const maxTracks = 100;
+    const maxTracks = 500;
     const tracksToSearch = scraped.slice(0, maxTracks);
 
-    // Play first track immediately
-    const firstResult = await searchWithRetry(player, { query: `ytsearch:${tracksToSearch[0].query}` }, user);
-    if (!firstResult?.tracks?.length) throw new Error("Tidak bisa memutar lagu pertama dari Spotify.");
+    // Resolve all tracks in parallel
+    const allTracks = [];
+    const results = await Promise.allSettled(
+      tracksToSearch.map((item) => searchWithRetry(player, { query: `ytsearch:${item.query}` }, user)),
+    );
+    for (const r of results) {
+      if (r.status === "fulfilled" && r.value?.tracks?.length) allTracks.push(r.value.tracks[0]);
+    }
 
-    const allTracks = [firstResult.tracks[0]];
+    if (!allTracks.length) throw new Error("Tidak ada lagu dari Spotify yang bisa diputar.");
 
     const wasPlaying = player.playing || player.paused;
 
@@ -187,33 +199,9 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
     await saveState(guildId);
 
-    // Return immediately; resolve remaining tracks in background (cancellable)
-    const remaining = tracksToSearch.slice(1);
-    if (remaining.length) {
-      spotifyAbort.set(guildId, false);
-      const p = player;
-      process.nextTick(async () => {
-        let count = 1;
-        for (const item of remaining) {
-          if (spotifyAbort.get(guildId)) break;
-          try {
-            const r = await p.search({ query: `ytsearch:${item.query}` }, user);
-            if (r?.tracks?.length) {
-              engine.queue.add(r.tracks[0]);
-              count++;
-            }
-          } catch {}
-          await new Promise((r) => setTimeout(r, 350));
-        }
-        spotifyAbort.delete(guildId);
-        Logger.info(`Resolved ${count}/${tracksToSearch.length} Spotify tracks for ${guildId}`);
-        await saveState(guildId);
-      });
-    }
-
     return {
       engine, player,
-      result: { tracks: allTracks, loadType: "track", spotifyTotal: tracksToSearch.length },
+      result: { tracks: allTracks, loadType: allTracks.length > 1 ? "playlist" : "track", spotifyTotal: allTracks.length },
       track: allTracks[0],
       wasPlaying,
     };
@@ -258,7 +246,6 @@ async function skip(guildId) {
 }
 
 async function stop(guildId) {
-  spotifyAbort.set(guildId, true);
   const engine = getEngine(guildId);
   await engine.playback.stop();
   await saveState(guildId);

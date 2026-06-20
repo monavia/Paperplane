@@ -12,15 +12,14 @@ module.exports = {
     const player = engine?.player;
     if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
 
-    const wasPlaying = player.playing || player.paused;
-
     try {
+      const hadTracks = !!(player.playing || player.paused || MusicService.getQueue(message.guildId)?.length);
       await MusicService.stop(message.guildId);
 
-      // If nothing was playing, queueEnd won't fire — send message directly
-      if (!wasPlaying) {
-        await message.channel.send({ embeds: [SuccessEmbed.build("Stopped.")] });
+      if (!hadTracks) {
+        return message.channel.send({ embeds: [SuccessEmbed.build("Queue empty.")] });
       }
+      return message.channel.send({ embeds: [SuccessEmbed.build("Thank you for using our service!")] });
     } catch (err) {
       await message.channel.send({ embeds: [ErrorEmbed.build(err.message)] });
     }

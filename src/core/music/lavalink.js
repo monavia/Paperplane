@@ -91,8 +91,7 @@ async function init(client) {
   });
 
   lavalink.nodeManager.on("error", (node, err) => {
-    if (!connectedNodes.has(node.options.name)) return;
-    Logger.error(`Lavalink ${nodeLabel(node)} error: ${err.message}`);
+    Logger.warn(`Lavalink ${nodeLabel(node)} error: ${err.message}`);
   });
 
   // Catch errors on the manager itself
@@ -102,10 +101,14 @@ async function init(client) {
 
   client.on("raw", (d) => lavalink.sendRawData(d));
 
-  await lavalink.init({
-    id: botConfig.clientId,
-    username: client.user?.username || "bot",
-  });
+  try {
+    await lavalink.init({
+      id: botConfig.clientId,
+      username: client.user?.username || "bot",
+    });
+  } catch (err) {
+    Logger.warn(`Lavalink init error (some nodes may be unavailable): ${err.message}`);
+  }
 
   // Wait up to 20s for all nodes to connect
   await new Promise((resolve) => {

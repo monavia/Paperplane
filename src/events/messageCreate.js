@@ -142,12 +142,12 @@ module.exports = {
         if (!voice) return message.channel.send({ embeds: [ErrorEmbed.build("Kamu harus join voice channel dulu.")] });
         const player = MusicService.getEngine(message.guildId).player;
         if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("Tidak ada lagu yang sedang diputar.")] });
-        const wasPlaying = player.playing || player.paused;
+        const hadTracks = !!(player.playing || player.paused || MusicService.getQueue(message.guildId)?.length);
         await MusicService.stop(message.guildId);
-        if (!wasPlaying) {
-          return message.channel.send({ embeds: [SuccessEmbed.build("Stopped.")] });
+        if (!hadTracks) {
+          return message.channel.send({ embeds: [SuccessEmbed.build("Queue empty.")] });
         }
-        return;
+        return message.channel.send({ embeds: [SuccessEmbed.build("Thank you for using our service!")] }).catch(() => {});
       }
 
       if (interpreted.type === "pause") {

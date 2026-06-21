@@ -82,6 +82,18 @@ async function restoreAllStates(client) {
         continue;
       }
 
+      // Check if bot is alone in voice channel after rejoin
+      if (voiceChannel.members.size === 1 && voiceChannel.members.has(client.user.id)) {
+        Logger.info(`Bot alone in voice after restore for ${state.guildId}, starting disconnect timer`);
+        setTimeout(async () => {
+          const ch = guild.channels.cache.get(state.voiceChannelId);
+          if (ch?.members?.size === 1 && ch.members.has(client.user.id)) {
+            await destroyEngine(state.guildId);
+          }
+        }, 120000);
+        continue;
+      }
+
       // Check if Lavalink resume already restored a playing track
       let resumedTrackActive = false;
       const node = player?.node;

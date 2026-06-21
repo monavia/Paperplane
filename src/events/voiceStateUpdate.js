@@ -26,7 +26,7 @@ module.exports = {
       return;
     }
 
-    // All users left; clean up after 60s if bot is alone
+    // All users left; clean up after 1m if bot is alone
     if (oldState.channelId && !newState.channelId) {
       const channel = oldState.channel;
       if (channel.members.size === 1 && channel.members.has(botId)) {
@@ -34,7 +34,7 @@ module.exports = {
           if (channel.members.size === 1 && channel.members.has(botId)) {
             await destroyEngine(guildId);
           }
-        }, 300000);
+        }, 60000);
       }
     }
   },

@@ -54,7 +54,7 @@ function register(client) {
     const startInfo = trackStartTimes.get(player.guildId);
     if (startInfo) {
       const playedMs = Date.now() - startInfo.startedAt;
-      const { recordTrackPlay } = require("../services/StatsService");
+      const { recordTrackPlay } = require("../../services/StatsService");
       recordTrackPlay(player.guildId, startInfo.track, Math.min(playedMs, track?.info?.duration || playedMs));
       trackStartTimes.delete(player.guildId);
     }
@@ -110,7 +110,7 @@ function register(client) {
 
     // Queue is empty — try autoplay before disconnecting
     try {
-      const { getEngine } = require("../services/MusicService");
+      const { getEngine } = require("../../services/MusicService");
       const engine = getEngine(player.guildId);
       if (engine?.playback?.autoplay) {
         const AutoplayEngine = require("./AutoplayEngine");

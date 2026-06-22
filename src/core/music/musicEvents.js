@@ -75,6 +75,8 @@ function register(client) {
     // Loop to skip unresolvable tracks (prevents cascade spam)
     // NOTE: state.nowPlaying is NOT deleted here — trackEnd keeps the old track
     // visible during the gap. It's only deleted when queue is truly empty below.
+    const qSize = state.queues.get(player.guildId).length;
+    Logger.info(`[queueEnd] guild=${player.guildId} queueSize=${qSize} lastTrack=${track?.info?.title?.substring(0,30) || "null"}`);
     let next = null;
     while (true) {
       const queue = state.queues.get(player.guildId);
@@ -102,13 +104,14 @@ function register(client) {
 
     if (next) {
       state.nowPlaying.set(player.guildId, next);
-      player.play({ track: next, clientTrack: next }).catch(async (err) => {
+      try {
+        await player.play({ track: next, clientTrack: next });
+      } catch (err) {
         Logger.error(`Failed to play next: ${next.info?.title} — ${err.message}`);
         const { sendError } = require("../../core/utils/ErrorReporter");
         await sendError("Track play failed", `Guild: \`${player.guildId}\`\nTrack: **${next.info?.title || "Unknown"}**\nError: \`${err.message}\``);
-        // Try next track
         l.emit("queueEnd", player, next, { reason: "playFailed" });
-      });
+      }
       return;
     }
 
@@ -122,7 +125,7 @@ function register(client) {
         const autoTrack = await autoplay.getNextTrack(player, track);
         if (autoTrack) {
           state.nowPlaying.set(player.guildId, autoTrack);
-          player.play({ track: autoTrack, clientTrack: autoTrack }).catch(err => {
+          await player.play({ track: autoTrack, clientTrack: autoTrack }).catch(err => {
             Logger.error(`Autoplay playback failed: ${err.message}`);
           });
           return;
@@ -166,6 +169,15 @@ function register(client) {
     }
 
     // Auto-skip to next track
+    if (player.node?.connected) {
+      player.stopPlaying().catch(() => {});
+    }
+  });
+
+  l.on("trackStuck", (player, track, threshold) => {
+    Logger.warn(`[trackStuck] guild=${player.guildId} threshold=${threshold}ms title=${track?.info?.title?.substring(0,30) || "null"}`);
+    const { sendError } = require("../../core/utils/ErrorReporter");
+    sendError("Track stuck", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nThreshold: \`${threshold}ms\``);
     if (player.node?.connected) {
       player.stopPlaying().catch(() => {});
     }

@@ -9,6 +9,20 @@ class SpotifyScraper {
     };
   }
 
+  _getDurationMs(item) {
+    if (item.duration_ms) return item.duration_ms;
+    if (item.durationMs) return item.durationMs;
+    if (typeof item.duration === "number") {
+      return item.duration < 100000 ? item.duration * 1000 : item.duration;
+    }
+    if (item.duration?.totalMilliseconds) return item.duration.totalMilliseconds;
+    if (item.track?.duration_ms) return item.track.duration_ms;
+    if (item.track?.durationMs) return item.track.durationMs;
+    if (item.track?.duration?.totalMilliseconds) return item.track.duration.totalMilliseconds;
+    if (item.itemV2?.data?.duration?.totalMilliseconds) return item.itemV2.data.duration.totalMilliseconds;
+    return null;
+  }
+
   parseUrl(url) {
     const m = url.match(/open\.spotify\.com\/(playlist|track|album)\/([a-zA-Z0-9]+)/);
     if (!m) return null;
@@ -39,6 +53,7 @@ class SpotifyScraper {
         name: t.title,
         artists: t.subtitle ? [t.subtitle] : [],
         query: `${t.subtitle || ""} ${t.title}`.trim(),
+        duration: this._getDurationMs(t),
       }));
       allTracks.push(...mapped);
       if (mapped.length < 50) break;
@@ -63,6 +78,7 @@ class SpotifyScraper {
         name: e.title || e.name || "",
         artists: artistNames,
         query: `${artistNames.join(" ")} ${e.title || e.name || ""}`.trim(),
+        duration: this._getDurationMs(e),
       },
     ];
   }
@@ -174,6 +190,7 @@ class SpotifyScraper {
           name: item.title,
           artists: item.subtitle ? [item.subtitle] : [],
           query: `${item.subtitle || ""} ${item.title}`.trim(),
+          duration: this._getDurationMs(item),
         };
       }
 
@@ -187,6 +204,7 @@ class SpotifyScraper {
 
       const name = track.name || track.title || "";
       const artistArr = [];
+      const duration = this._getDurationMs(track);
 
       if (track.artists?.items) {
         for (const a of track.artists.items) {
@@ -202,7 +220,7 @@ class SpotifyScraper {
         artistArr.push(track.subtitle);
       }
 
-      return { name, artists: artistArr, query: `${artistArr.join(" ")} ${name}`.trim() };
+      return { name, artists: artistArr, query: `${artistArr.join(" ")} ${name}`.trim(), duration };
     }).filter((t) => t.name);
   }
 }

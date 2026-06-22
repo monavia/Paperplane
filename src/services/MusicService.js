@@ -180,13 +180,29 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     const maxTracks = 500;
     const tracksToSearch = scraped.slice(0, maxTracks);
 
-    // Resolve all tracks in parallel
+    // Resolve all tracks in parallel — prefer YouTube Music (official releases)
+    function pickBestMatch(tracks, expectedMs) {
+      if (!tracks?.length) return null;
+      if (!expectedMs || tracks.length === 1) return tracks[0];
+      let best = tracks[0];
+      let bestDiff = Math.abs((tracks[0].info?.duration || 0) - expectedMs);
+      for (let i = 1; i < tracks.length; i++) {
+        const diff = Math.abs((tracks[i].info?.duration || 0) - expectedMs);
+        if (diff < bestDiff) { best = tracks[i]; bestDiff = diff; }
+      }
+      return best;
+    }
+
     const allTracks = [];
     const results = await Promise.allSettled(
-      tracksToSearch.map((item) => searchWithRetry(player, { query: `ytsearch:${item.query}` }, user)),
+      tracksToSearch.map((item) => searchWithRetry(player, { query: `ytmsearch:${item.query}` }, user)),
     );
-    for (const r of results) {
-      if (r.status === "fulfilled" && r.value?.tracks?.length) allTracks.push(r.value.tracks[0]);
+    for (let i = 0; i < results.length; i++) {
+      const r = results[i];
+      if (r.status === "fulfilled" && r.value?.tracks?.length) {
+        const best = pickBestMatch(r.value.tracks, tracksToSearch[i]?.duration);
+        if (best) allTracks.push(best);
+      }
     }
 
     if (!allTracks.length) throw new Error("No playable tracks found from Spotify.");

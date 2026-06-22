@@ -32,7 +32,7 @@ async function sendError(title, description, fields = []) {
     if (fields.length) embed.addFields(fields);
     await getChannel().send({ embeds: [embed] });
   } catch (err) {
-    Logger.error("ErrorReporter send failed:", err.message);
+    Logger.error(`ErrorReporter send failed: ${err.message}`);
   }
 }
 
@@ -46,7 +46,7 @@ async function sendInfo(title, description) {
       .setTimestamp();
     await getChannel().send({ embeds: [embed] });
   } catch (err) {
-    Logger.error("ErrorReporter send failed:", err.message);
+    Logger.error(`ErrorReporter send failed: ${err.message}`);
   }
 }
 

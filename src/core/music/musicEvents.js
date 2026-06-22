@@ -42,8 +42,12 @@ function register(client) {
         const embed = new EmbedBuilder()
           .setDescription(`Now Playing [${track.info.title || "Unknown"}](${track.info.uri || ""})`)
           .setColor(Colors.NOWPLAYING);
-        channel.send({ embeds: [embed] }).catch(() => {});
+        channel.send({ embeds: [embed] }).catch(err => Logger.debug(`NowPlaying embed send failed: ${err.message}`));
+      } else {
+        Logger.debug(`trackStart: textChannel=${player.textChannelId} not found in cache for guild ${player.guildId}`);
       }
+    } else {
+      Logger.debug(`trackStart: no textChannelId for guild ${player.guildId}`);
     }
   });
 
@@ -148,10 +152,11 @@ function register(client) {
     disconnectTimers.set(player.guildId, timerId);
   });
 
-  l.on("trackError", (player, track, error) => {
-    Logger.error(`Track error in ${player.guildId}: ${error.message}`);
+  l.on("trackError", (player, track, payload) => {
+    const errMsg = payload?.error || payload?.exception?.message || "Unknown";
+    Logger.error(`Track error in ${player.guildId}: ${errMsg}`);
     const { sendError } = require("../../core/utils/ErrorReporter");
-    sendError("Track error", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nError: \`${error.message}\``);
+    sendError("Track error", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nError: \`${errMsg}\``).catch(() => {});
 
     // Throttle: skip if 5+ errors within 15 seconds (prevents infinite cascade)
     const now = Date.now();
@@ -162,7 +167,7 @@ function register(client) {
     if (recent.length >= 5) {
       Logger.error(`[trackError] cascade throttle triggered for ${player.guildId}, stopping playback`);
       const { sendError: send2 } = require("../../core/utils/ErrorReporter");
-      send2("Track error cascade throttle", `Guild: \`${player.guildId}\` — 5+ errors in 15s, playback stopped`);
+      send2("Track error cascade throttle", `Guild: \`${player.guildId}\` — 5+ errors in 15s, playback stopped`).catch(() => {});
       errorTimestamps.delete(player.guildId);
       player.stopPlaying().catch(() => {});
       return;
@@ -174,10 +179,11 @@ function register(client) {
     }
   });
 
-  l.on("trackStuck", (player, track, threshold) => {
-    Logger.warn(`[trackStuck] guild=${player.guildId} threshold=${threshold}ms title=${track?.info?.title?.substring(0,30) || "null"}`);
+  l.on("trackStuck", (player, track, payload) => {
+    const thresholdMs = payload?.thresholdMs || 0;
+    Logger.warn(`[trackStuck] guild=${player.guildId} threshold=${thresholdMs}ms title=${track?.info?.title?.substring(0,30) || "null"}`);
     const { sendError } = require("../../core/utils/ErrorReporter");
-    sendError("Track stuck", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nThreshold: \`${threshold}ms\``);
+    sendError("Track stuck", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nThreshold: \`${thresholdMs}ms\``).catch(() => {});
     if (player.node?.connected) {
       player.stopPlaying().catch(() => {});
     }
@@ -186,7 +192,7 @@ function register(client) {
   l.on("playerDisconnect", (player) => {
     Logger.warn(`Player disconnected in ${player.guildId}`);
     const { sendInfo } = require("../../core/utils/ErrorReporter");
-    sendInfo("Player disconnected", `Guild: \`${player.guildId}\`\nVoice: \`${player.voiceChannelId || "unknown"}\``);
+    sendInfo("Player disconnected", `Guild: \`${player.guildId}\`\nVoice: \`${player.voiceChannelId || "unknown"}\``).catch(() => {});
     state.nowPlaying.delete(player.guildId);
     state.queues.clear(player.guildId);
     lavalink.stopPositionTracking(player.guildId);

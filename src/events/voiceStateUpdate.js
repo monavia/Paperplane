@@ -1,6 +1,7 @@
 const { Events, EmbedBuilder } = require("discord.js");
 const { getEngine, destroyEngine } = require("../services/MusicService");
 const Colors = require("../core/constants/Colors");
+const Logger = require("../core/utils/Logger");
 
 module.exports = {
   name: Events.VoiceStateUpdate,

@@ -24,7 +24,7 @@ module.exports = {
     const player = getPlayer(interaction.guildId);
     if (!player) return interaction.reply({ embeds: [ErrorEmbed.build("No active player.")], ephemeral: true });
 
-    player.setLoop(mode);
+    await player.setRepeatMode(mode);
     await interaction.reply({ embeds: [SuccessEmbed.build(`Loop mode set to \`${mode}\`.`)] });
   },
 };

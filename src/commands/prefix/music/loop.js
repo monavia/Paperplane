@@ -13,7 +13,7 @@ module.exports = {
     const player = getPlayer(message.guildId);
     if (!player) return message.channel.send({ embeds: [ErrorEmbed.build("No active player.")] });
 
-    player.setLoop(mode);
+    await player.setRepeatMode(mode);
     await message.channel.send({ embeds: [SuccessEmbed.build(`Loop mode set to \`${mode}\`.`)] });
   },
 };

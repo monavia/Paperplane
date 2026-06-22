@@ -21,8 +21,8 @@ module.exports = {
     if (message.author.bot || !message.guild) return;
 
     const content = message.content.trim();
-    const guild = await GuildRepository.findByGuildId(message.guildId);
-    const prefix = guild.prefix || botConfig.prefix;
+    const guildPrefix = await GuildRepository.getPrefix(message.guildId);
+    const prefix = guildPrefix || botConfig.prefix;
 
     // Prefix commands
     if (content.startsWith(prefix)) {
@@ -243,8 +243,7 @@ module.exports = {
 
       if (interpreted.type === "prefix") {
         const GuildRepository = require("../database/repositories/GuildRepository");
-        const guild = await GuildRepository.findByGuildId(message.guildId);
-        const current = guild.prefix || botConfig.prefix;
+        const current = await GuildRepository.getPrefix(message.guildId) || botConfig.prefix;
         const isSet = /^set\s+/i.test(input);
         if (isSet) {
           if (!message.member.permissions.has(PermissionFlagsBits.Administrator)) {

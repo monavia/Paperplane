@@ -3,7 +3,9 @@ require("dotenv/config");
 module.exports = {
   uri: process.env.DATABASE_URI || "mongodb://localhost:27017/discordbot",
   options: {
-    serverSelectionTimeoutMS: 5000,
+    serverSelectionTimeoutMS: 10000,
+    socketTimeoutMS: 45000,
+    maxPoolSize: 10,
   },
 };
 

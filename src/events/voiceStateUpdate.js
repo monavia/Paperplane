@@ -30,6 +30,9 @@ module.exports = {
     if (oldState.channelId && !newState.channelId) {
       const channel = oldState.channel;
       if (channel.members.size === 1 && channel.members.has(botId)) {
+        Logger.info(`Bot alone in voice ${guildId}, disconnect timer started`);
+        const { sendInfo } = require("../core/utils/ErrorReporter");
+        sendInfo("Bot left alone in voice", `Guild: \`${guildId}\`\nChannel: **${channel.name}** — disconnecting in 1m`);
         setTimeout(async () => {
           if (channel.members.size === 1 && channel.members.has(botId)) {
             await destroyEngine(guildId);

@@ -25,6 +25,7 @@ let heartbeatTimer;
 loadEvents(client);
 
 client.once("clientReady", async () => {
+  require("./core/utils/ErrorReporter").init(client);
   loadSlash(client);
   loadPrefix(client);
 
@@ -100,6 +101,19 @@ async function shutdown() {
 
 process.once("SIGINT", shutdown);
 process.once("SIGTERM", shutdown);
+
+process.on("uncaughtException", async (err) => {
+  Logger.error("UNCAUGHT EXCEPTION:", err.message);
+  const { sendError } = require("./core/utils/ErrorReporter");
+  await sendError("Uncaught Exception", `\`\`\`${err.stack?.slice(0, 1500) || err.message}\`\`\``);
+  shutdown();
+});
+
+process.on("unhandledRejection", async (reason) => {
+  Logger.error("UNHANDLED REJECTION:", reason?.message || reason);
+  const { sendError } = require("./core/utils/ErrorReporter");
+  await sendError("Unhandled Rejection", `\`\`\`${reason?.stack?.slice(0, 1500) || reason?.message || String(reason)}\`\`\``);
+});
 
 client.login(botConfig.token);
 

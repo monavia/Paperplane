@@ -102,8 +102,12 @@ function register(client) {
 
     if (next) {
       state.nowPlaying.set(player.guildId, next);
-      player.play({ track: next, clientTrack: next }).catch(err => {
+      player.play({ track: next, clientTrack: next }).catch(async (err) => {
         Logger.error(`Failed to play next: ${next.info?.title} — ${err.message}`);
+        const { sendError } = require("../../core/utils/ErrorReporter");
+        await sendError("Track play failed", `Guild: \`${player.guildId}\`\nTrack: **${next.info?.title || "Unknown"}**\nError: \`${err.message}\``);
+        // Try next track
+        l.emit("queueEnd", player, next, { reason: "playFailed" });
       });
       return;
     }
@@ -143,6 +147,8 @@ function register(client) {
 
   l.on("trackError", (player, track, error) => {
     Logger.error(`Track error in ${player.guildId}: ${error.message}`);
+    const { sendError } = require("../../core/utils/ErrorReporter");
+    sendError("Track error", `Guild: \`${player.guildId}\`\nTrack: **${track?.info?.title || "Unknown"}**\nError: \`${error.message}\``);
 
     // Throttle: skip if 5+ errors within 15 seconds (prevents infinite cascade)
     const now = Date.now();
@@ -152,6 +158,8 @@ function register(client) {
     errorTimestamps.set(player.guildId, recent);
     if (recent.length >= 5) {
       Logger.error(`[trackError] cascade throttle triggered for ${player.guildId}, stopping playback`);
+      const { sendError: send2 } = require("../../core/utils/ErrorReporter");
+      send2("Track error cascade throttle", `Guild: \`${player.guildId}\` — 5+ errors in 15s, playback stopped`);
       errorTimestamps.delete(player.guildId);
       player.stopPlaying().catch(() => {});
       return;
@@ -164,6 +172,9 @@ function register(client) {
   });
 
   l.on("playerDisconnect", (player) => {
+    Logger.warn(`Player disconnected in ${player.guildId}`);
+    const { sendInfo } = require("../../core/utils/ErrorReporter");
+    sendInfo("Player disconnected", `Guild: \`${player.guildId}\`\nVoice: \`${player.voiceChannelId || "unknown"}\``);
     state.nowPlaying.delete(player.guildId);
     state.queues.clear(player.guildId);
     lavalink.stopPositionTracking(player.guildId);

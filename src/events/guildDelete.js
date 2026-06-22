@@ -7,6 +7,8 @@ module.exports = {
   name: Events.GuildDelete,
   async execute(guild) {
     Logger.info(`Left guild: ${guild.name} (${guild.id})`);
+    const { sendInfo } = require("../core/utils/ErrorReporter");
+    sendInfo("Left server", `**${guild.name}** (\`${guild.id}\`) — bot removed or server deleted`);
     await destroyEngine(guild.id);
     await GuildRepository.deleteGuild(guild.id);
   },

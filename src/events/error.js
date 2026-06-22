@@ -5,6 +5,8 @@ module.exports = {
   name: Events.Error,
   async execute(error) {
     Logger.error("Client error:", error.message);
+    const { sendError } = require("../core/utils/ErrorReporter");
+    sendError("Client error", `\`\`\`${error.message}\`\`\``);
   },
 };
 

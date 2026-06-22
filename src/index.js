@@ -69,7 +69,7 @@ client.once("clientReady", async () => {
   Logger.ready("Paperplane is ready");
 
   client.user.setPresence({
-    activities: [{ name: "-help | Seryn", type: 2 }],
+    activities: [{ name: `${botConfig.prefix}help | ${botConfig.trigger}`, type: 2 }],
       status: "online",
   });
 });

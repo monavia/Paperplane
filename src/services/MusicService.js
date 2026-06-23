@@ -246,9 +246,12 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     };
   }
 
-  const searchQuery = multi && !query.startsWith("ytsearch:") && !query.startsWith("http")
-    ? `ytsearch:${query}`
-    : query;
+  let searchQuery = query;
+  if (!query.startsWith("http") && !query.includes(":")) {
+    searchQuery = `ytmsearch:${query}`;
+  } else if (query.startsWith("ytsearch:")) {
+    searchQuery = `ytmsearch:${query.slice(9)}`;
+  }
 
   const result = await searchWithRetry(player, { query: searchQuery }, user);
   if (!result?.tracks?.length) throw new Error("No results found");

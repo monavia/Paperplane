@@ -180,7 +180,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     const maxTracks = 500;
     const tracksToSearch = scraped.slice(0, maxTracks);
 
-    // Resolve all tracks in parallel — prefer YouTube Music (official releases)
+    // Resolve all tracks — prefer YouTube Music (official releases)
     function pickBestMatch(tracks, expectedMs) {
       if (!tracks?.length) return null;
       if (!expectedMs || tracks.length === 1) return tracks[0];
@@ -193,16 +193,30 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
       return best;
     }
 
-    const allTracks = [];
-    const results = await Promise.allSettled(
-      tracksToSearch.map((item) => searchWithRetry(player, { query: `ytmsearch:${item.query}` }, user)),
-    );
-    for (let i = 0; i < results.length; i++) {
-      const r = results[i];
-      if (r.status === "fulfilled" && r.value?.tracks?.length) {
-        const best = pickBestMatch(r.value.tracks, tracksToSearch[i]?.duration);
-        if (best) allTracks.push(best);
+    async function searchWithFallback(player, item, user) {
+      // Try ytmsearch first
+      for (const prefix of ["ytmsearch", "ytsearch", "scsearch"]) {
+        const result = await searchWithRetry(player, { query: `${prefix}:${item.query}` }, user, 0);
+        if (result?.tracks?.length) {
+          const best = pickBestMatch(result.tracks, item.duration);
+          return best;
+        }
+        await new Promise((r) => setTimeout(r, 300));
       }
+      return null;
+    }
+
+    const allTracks = [];
+    const batchSize = 5;
+    for (let b = 0; b < tracksToSearch.length; b += batchSize) {
+      const batch = tracksToSearch.slice(b, b + batchSize);
+      const results = await Promise.allSettled(
+        batch.map((item) => searchWithFallback(player, item, user)),
+      );
+      for (const r of results) {
+        if (r.status === "fulfilled" && r.value) allTracks.push(r.value);
+      }
+      if (b + batchSize < tracksToSearch.length) await new Promise((r) => setTimeout(r, 500));
     }
 
     if (!allTracks.length) throw new Error("No playable tracks found from Spotify.");

@@ -194,7 +194,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     }
 
     async function searchWithFallback(player, item, user) {
-      for (const prefix of ["ytmsearch", "ytsearch", "scsearch"]) {
+      for (const prefix of ["ytsearch", "scsearch"]) {
         const result = await searchWithRetry(player, { query: `${prefix}:${item.query}` }, user, 0);
         if (result?.tracks?.length) {
           const best = pickBestMatch(result.tracks, item.duration);
@@ -248,9 +248,7 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
 
   let searchQuery = query;
   if (!query.startsWith("http") && !query.includes(":")) {
-    searchQuery = `ytmsearch:${query}`;
-  } else if (query.startsWith("ytsearch:")) {
-    searchQuery = `ytmsearch:${query.slice(9)}`;
+    searchQuery = `ytsearch:${query}`;
   }
 
   const result = await searchWithRetry(player, { query: searchQuery }, user);

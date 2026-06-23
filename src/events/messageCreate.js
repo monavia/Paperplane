@@ -288,7 +288,8 @@ module.exports = {
                 `\`${prefix}shuffle\` — Acak antrian\n` +
                 `\`${prefix}loop\` — Ulang lagu/antrian\n` +
                 `\`${prefix}seek <detik>\` — Loncat ke posisi\n` +
-                `\`${prefix}autoplay\` — Putar lagu serupa`,
+                `\`${prefix}autoplay\` — Putar lagu serupa\n` +
+                `\`${prefix}lyrics\` — Lirik lagu`,
             },
             {
               name: "🤖 AI",

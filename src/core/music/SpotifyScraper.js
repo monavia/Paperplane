@@ -39,12 +39,7 @@ class SpotifyScraper {
   }
 
   async scrapePlaylist(id) {
-    // Try main page first
-    const html = await this._fetchPage(`https://open.spotify.com/playlist/${id}`);
-    const pageTracks = this._extractFromHtml(html) || [];
-
-    // Also fetch via embed pagination to get ALL tracks (up to 500)
-    const allTracks = [...pageTracks];
+    const allTracks = [];
     let offset = 0;
     while (allTracks.length < 500) {
       const data = await this._fetchEntity("playlist", id, offset);
@@ -62,6 +57,11 @@ class SpotifyScraper {
 
     const unique = this._deduplicate(allTracks);
     if (unique.length) return unique;
+
+    // Fallback: try main page HTML extraction
+    const html = await this._fetchPage(`https://open.spotify.com/playlist/${id}`);
+    const htmlTracks = this._extractFromHtml(html);
+    if (htmlTracks?.length) return htmlTracks;
 
     throw new Error("Could not extract playlist data from Spotify");
   }

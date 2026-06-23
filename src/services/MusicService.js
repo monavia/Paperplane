@@ -194,20 +194,18 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
     }
 
     async function searchWithFallback(player, item, user) {
-      // Try ytmsearch first
       for (const prefix of ["ytmsearch", "ytsearch", "scsearch"]) {
         const result = await searchWithRetry(player, { query: `${prefix}:${item.query}` }, user, 0);
         if (result?.tracks?.length) {
           const best = pickBestMatch(result.tracks, item.duration);
           return best;
         }
-        await new Promise((r) => setTimeout(r, 300));
       }
       return null;
     }
 
     const allTracks = [];
-    const batchSize = 5;
+    const batchSize = 20;
     for (let b = 0; b < tracksToSearch.length; b += batchSize) {
       const batch = tracksToSearch.slice(b, b + batchSize);
       const results = await Promise.allSettled(
@@ -216,7 +214,6 @@ async function play(guildId, voiceChannelId, textChannelId, query, user, multi =
       for (const r of results) {
         if (r.status === "fulfilled" && r.value) allTracks.push(r.value);
       }
-      if (b + batchSize < tracksToSearch.length) await new Promise((r) => setTimeout(r, 500));
     }
 
     if (!allTracks.length) throw new Error("No playable tracks found from Spotify.");

@@ -82,7 +82,7 @@ module.exports = {
             const label = url ? `[${title}](${url})` : title;
             return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${label}`)] });
           }
-          return;
+          return message.channel.send({ embeds: [NowPlayingEmbed.build(track, engine.player)] });
         } catch (err) {
           await msg.delete().catch(() => {});
           Logger.error("AI play error:", err.message);
@@ -195,7 +195,7 @@ module.exports = {
         if (!mode || !["none", "track", "queue"].includes(mode)) {
           return message.channel.send({ embeds: [ErrorEmbed.build("Gunakan: loop <none|track|queue>")] });
         }
-        player.setLoop(mode);
+        player.setRepeatMode(mode);
         return message.channel.send({ embeds: [SuccessEmbed.build(`Mode loop: \`${mode}\`.`)] });
       }
 

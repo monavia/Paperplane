@@ -59,7 +59,8 @@ function register(client) {
     if (startInfo) {
       const playedMs = Date.now() - startInfo.startedAt;
       const { recordTrackPlay } = require("../../services/StatsService");
-      recordTrackPlay(player.guildId, startInfo.track, Math.min(playedMs, track?.info?.duration || playedMs));
+      const user = track?.requester;
+      recordTrackPlay(player.guildId, startInfo.track, Math.min(playedMs, track?.info?.duration || playedMs), user?.id || null, user?.username || null);
       trackStartTimes.delete(player.guildId);
     }
 
@@ -76,47 +77,46 @@ function register(client) {
   });
 
   l.on("queueEnd", async (player, track, payload) => {
-    // Loop to skip unresolvable tracks (prevents cascade spam)
+    // Outer loop: keeps trying next tracks until one plays or queue is dry
     // NOTE: state.nowPlaying is NOT deleted here — trackEnd keeps the old track
     // visible during the gap. It's only deleted when queue is truly empty below.
     const qSize = state.queues.get(player.guildId).length;
     Logger.info(`[queueEnd] guild=${player.guildId} queueSize=${qSize} lastTrack=${track?.info?.title?.substring(0,30) || "null"}`);
-    let next = null;
     while (true) {
-      const queue = state.queues.get(player.guildId);
-      if (!queue.length) break;
-      next = queue.shift();
-      state.queues.set(player.guildId, queue);
+      let next = null;
+      // Inner loop: find next valid track in queue
+      while (true) {
+        const queue = state.queues.get(player.guildId);
+        if (!queue.length) break;
+        next = queue.shift();
+        state.queues.set(player.guildId, queue);
 
-      // Re-search if encoded is missing (e.g. stale from DB restore)
-      if (!next.encoded && next.info?.uri) {
-        try {
-          const res = await player.search({ query: next.info.uri }, client.user);
-          if (res?.tracks?.length) {
-            Object.assign(next, res.tracks[0]);
-          }
-        } catch {}
+        // Re-search if encoded is missing (e.g. stale from DB restore)
+        if (!next.encoded && next.info?.uri) {
+          try {
+            const res = await player.search({ query: next.info.uri }, client.user);
+            if (res?.tracks?.length) {
+              Object.assign(next, res.tracks[0]);
+            }
+          } catch {}
+        }
+
+        if (!next.encoded) continue;
+        break;
       }
 
-      if (!next.encoded) {
-        next = null;
-        continue;
-      }
+      if (!next) break; // queue empty
 
-      break;
-    }
-
-    if (next) {
+      // Try to play — on failure loop to next track instead of recursive emit
       state.nowPlaying.set(player.guildId, next);
       try {
         await player.play({ track: next, clientTrack: next });
+        return;
       } catch (err) {
         Logger.error(`Failed to play next: ${next.info?.title} — ${err.message}`);
         const { sendError } = require("../../core/utils/ErrorReporter");
-        await sendError("Track play failed", `Guild: \`${player.guildId}\`\nTrack: **${next.info?.title || "Unknown"}**\nError: \`${err.message}\``);
-        l.emit("queueEnd", player, next, { reason: "playFailed" });
+        sendError("Track play failed", `Guild: \`${player.guildId}\`\nTrack: **${next.info?.title || "Unknown"}**\nError: \`${err.message}\``);
       }
-      return;
     }
 
     // Queue is empty — try autoplay before disconnecting
@@ -166,10 +166,8 @@ function register(client) {
     errorTimestamps.set(player.guildId, recent);
     if (recent.length >= 5) {
       Logger.error(`[trackError] cascade throttle triggered for ${player.guildId}, stopping playback`);
-      const { sendError: send2 } = require("../../core/utils/ErrorReporter");
-      send2("Track error cascade throttle", `Guild: \`${player.guildId}\` — 5+ errors in 15s, playback stopped`).catch(() => {});
       errorTimestamps.delete(player.guildId);
-      player.stopPlaying().catch(() => {});
+      if (player.node?.connected) player.stopPlaying().catch(() => {});
       return;
     }
 

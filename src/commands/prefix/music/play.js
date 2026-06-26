@@ -35,6 +35,7 @@ module.exports = {
         const label = url ? `[${title}](${url})` : title;
         return message.channel.send({ embeds: [SuccessEmbed.build(`Added ${label}`)] });
       }
+      return message.channel.send({ embeds: [NowPlayingEmbed.build(track, engine.player)] });
     } catch (err) {
       Logger.error("!play error:", err.message);
       await msg.delete().catch(() => {});

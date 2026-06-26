@@ -2,7 +2,6 @@ const { SlashCommandBuilder } = require("discord.js");
 const { getPlayer } = require("../../../core/music/PlayerManager");
 const SuccessEmbed = require("../../../ui/embeds/SuccessEmbed");
 const ErrorEmbed = require("../../../ui/embeds/ErrorEmbed");
-const MusicModes = require("../../../core/constants/MusicModes");
 
 module.exports = {
   data: new SlashCommandBuilder()

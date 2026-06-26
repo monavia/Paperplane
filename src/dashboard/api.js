@@ -86,7 +86,12 @@ function api(client) {
         return res.status(400).json({ error: "Bot is not in a voice channel" });
       }
 
-      await MusicService.play(req.params.guildId, voiceChannelId, guild.systemChannelId || guild.channels.cache.first()?.id, query, client.user);
+      const textChan = guild.systemChannelId
+        ? guild.channels.cache.get(guild.systemChannelId)
+        : guild.channels.cache.find(c => c.isTextBased());
+      const textChannelId = textChan?.id || guild.channels.cache.first()?.id;
+
+      await MusicService.play(req.params.guildId, voiceChannelId, textChannelId, query, client.user);
       res.json({ ok: true });
     } catch (err) {
       Logger.error("Dashboard play error:", err.message);

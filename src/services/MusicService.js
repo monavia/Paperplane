@@ -154,7 +154,7 @@ async function searchWithRetry(player, searchOpts, user, retries = 1) {
       return result;
     } catch (err) {
       Logger.debug(`[SEARCH] node=${nodeName} query="${query?.slice(0, 80)}" fail ms=${Date.now() - start} err="${err.message}"`);
-      if (i < retries && err.message?.includes("timeout")) {
+      if (i < retries) {
         await new Promise((r) => setTimeout(r, 1000));
         continue;
       }
